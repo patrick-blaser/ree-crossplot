@@ -14,8 +14,9 @@ radii        <- load_radii()
 
 NORM_CHOICES <- setNames(names(NORMALISER_LABELS), NORMALISER_LABELS)
 GD_METHODS <- c("Bau & Dulski (1996): 0.33 Sm + 0.67 Tb" = "BD1996",
-                "Sm²/Nd (Kulaksız & Bau 2007)" = "SmNd",
-                "Mean of Tb and Dy" = "TbDy",
+                "Geometric Sm–Tb: Sm^(1/3) Tb^(2/3) (Barrat & Bayon 2024)" = "BDgeo",
+                "Sm²/Nd (Kulaksız & Bau 2007; Barrat & Bayon 2024)" = "SmNd",
+                "Tb²/Dy (Barrat & Bayon 2024)" = "TbDy",
                 "Polynomial fit without Gd, Ce, Eu (experimental)" = "BLambdaR")
 
 section <- function(title, ..., open = FALSE) {
@@ -84,7 +85,11 @@ ui <- fluidPage(
                       choices = c("Interpolate from neighbours" = "interpolate",
                                   "Mean of measured group members" = "groupmean",
                                   "Not allowed (sample is dropped)" = "none")),
-          div(class = "lam-note", "Not used in λ space (only measured elements enter the fit)."))),
+          div(class = "lam-note", "Not used in λ space (only measured elements enter the fit).")),
+        selectInput("ce_form", "Ce/Ce* (table only)",
+                    choices = c("Geometric from Pr and Nd: Ce Nd / Pr² (Barrat & Bayon 2024)" = "geoPrNd",
+                                "Arithmetic La–Pr: 2 Ce / (La + Pr) (Martin et al. 2010)" = "arithLaPr",
+                                "Geometric La–Pr: Ce / √(La Pr)" = "geoLaPr"))),
       section("3 · Screening & symbols",
         selectInput("fill_var", "Symbol fill", choices = c("Group (categorical)" = "group")),
         checkboxInput("rough_on", "Exclude samples rougher than …", FALSE),
@@ -181,7 +186,8 @@ server <- function(input, output, session) {
                 norm_custom = if (use_custom) v else NULL,
                 lree = input$lree %||% "LaPrNd", gap = input$gap %||% "interpolate",
                 gd = input$gd %||% "measured", gd_method = input$gd_method %||% "BD1996",
-                gd_baseline = if (is.finite(input$gd_baseline %||% 1)) input$gd_baseline %||% 1 else 1)
+                gd_baseline = if (is.finite(input$gd_baseline %||% 1)) input$gd_baseline %||% 1 else 1,
+                ce_form = input$ce_form %||% "geoPrNd")
   })
   # reference data are always computed with measured Gd and interpolated gaps; only the shale
   # standard and the LREE definition follow the user's choice
@@ -412,7 +418,9 @@ server <- function(input, output, session) {
                gap_method = c(interpolate = "interpolate", groupmean = "group mean", none = "none")[[cf$gap]],
                Gd_handling = if (identical(cf$gd, "ignore")) "ignored (replaced by estimate)" else "measured",
                Gd_star_method = unname(names(GD_METHODS)[match(cf$gd_method, GD_METHODS)]),
-               Gd_baseline = cf$gd_baseline, plot_space = space(), stringsAsFactors = FALSE)
+               Gd_baseline = cf$gd_baseline,
+               Ce_anomaly = c(geoPrNd = "Ce Nd / Pr^2", arithLaPr = "2 Ce / (La + Pr)", geoLaPr = "Ce / sqrt(La Pr)")[[cf$ce_form]],
+               plot_space = space(), stringsAsFactors = FALSE)
   })
 
   computed <- reactive({
@@ -423,7 +431,7 @@ server <- function(input, output, session) {
     num <- vapply(out, is.numeric, logical(1))
     num[intersect(names(num), c("row", "n_estimated", "n_REE_measured"))] <- FALSE
     out[num] <- lapply(out[num], function(v) signif(v, 5))
-    nm <- c(x = "HREE/LREE", y = "MREE/MREE*", Ce_Ceanom = "Ce/Ce*", Eu_Euanom = "Eu/Eu*",
+    nm <- c(x = "HREE/LREE", y = "MREE/MREE*", Ce_Ceanom = "Ce/Ce*", La_Laanom = "La/La*", Eu_Euanom = "Eu/Eu*",
             Gd_Gdstar = "Gd/Gd*", Gd_anth = "Gd_anthropogenic (input units)", REE_rough = "REE_roughness")
     names(out)[match(names(nm), names(out), nomatch = 0)] <- nm[names(nm) %in% names(out)]
     ids <- c("row", "sample", "group")

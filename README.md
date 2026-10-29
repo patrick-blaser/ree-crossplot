@@ -13,11 +13,11 @@ The app runs entirely in the browser (Shinylive / WebAssembly), so uploaded data
 The sidebar has six collapsible sections.
 
 1. **Your data**: upload a CSV/TSV (or tick *Use example data*; uploading a file unticks it), choose concentrations or ratios, the unit basis (mass or molar), ID and group columns, and further columns to carry into the results. The columns recognised as REE (and Y) are listed under the status message.
-2. **Normalisation & ratios**: normalising reference (PAAS Pourmand et al. 2012 by default; PAAS McLennan 1989, NASC, EUS Bau et al. 2018, CI chondrites after Pourmand 2012 or O'Neill 2016, or your own one-row reference file), LREE definition (La-Pr-Nd or Pr-Nd-Sm) and gap method (interpolate, group mean, none).
+2. **Normalisation & ratios**: normalising reference (PAAS Pourmand et al. 2012 by default; PAAS McLennan 1989, NASC, EUS Bau et al. 2018, CI chondrites after Pourmand 2012 or O'Neill 2016, or your own one-row reference file), LREE definition (La-Pr-Nd or Pr-Nd-Sm) gap method (interpolate, group mean, none) and the Ce/Ce\* definition.
 3. **Screening & symbols**: symbol fill by group, a numeric column (e.g. age, depth), REE roughness or Gd/Gd\*; an optional roughness limit; a minimum number of measured REE and required elements; group visibility (tick a single group to show only that one, or untick groups to exclude them). Screening applies to your data only.
 4. **Plot**: λ space (experimental), log10 axes (both axes together), legend on/off, plot window, field coverage and smoothness, point size and optional density fields for your own groups.
 5. **Reference layers**: density fields, reference points, arrays, labels, and the individual reference datasets.
-6. **Anthropogenic Gd**: use or ignore measured Gd, the method for natural Gd (Bau and Dulski 1996, Sm²/Nd, Tb–Dy mean, or BLambdaR, experimental) and the natural Gd/Gd\* baseline.
+6. **Anthropogenic Gd**: use or ignore measured Gd, the method for natural Gd (Bau and Dulski 1996, its geometric version, Sm²/Nd, Tb²/Dy, or BLambdaR, experimental) and the natural Gd/Gd\* baseline.
 
 Options that have no effect in λ space are greyed out and annotated while λ space is ticked.
 
@@ -31,15 +31,15 @@ Downloads: figure (PDF; PNG where supported), results table (CSV), arrays and fi
 |---|---|
 | HREE/LREE | (Tm + Yb + Lu) / LREE, with LREE = La + Pr + Nd (default) or Pr + Nd + Sm |
 | MREE/MREE\* | (Gd + Tb + Dy) / ((HREE + LREE) / 2) |
-| Ce/Ce\*, Eu/Eu\* | 2 Ce / (La + Pr); Eu / sqrt(Sm Gd) |
-| Gd/Gd\* | Gd / Gd\*, with Gd\* = 0.33 Sm + 0.67 Tb (Bau and Dulski, 1996) by default |
+| Anomalies (table only) | geometric, after Barrat and Bayon (2024): Ce/Ce\* = Ce·Nd / Pr² (arithmetic 2 Ce / (La + Pr) and Ce / sqrt(La Pr) selectable), La/La\* = La·Nd² / Pr³, Eu/Eu\* = Eu / sqrt(Sm·Gd) |
+| Gd/Gd\* | Gd / Gd\*, with Gd\* = 0.33 Sm + 0.67 Tb (Bau and Dulski, 1996) by default; alternatives Sm^(1/3) Tb^(2/3), Sm²/Nd, Tb²/Dy (Barrat and Bayon, 2024) or BLambdaR |
 | Anthropogenic Gd | Gd · max(0, 1 − baseline / (Gd/Gd\*)), in the input units |
 | REE roughness | square root of the summed squared deviations of Nd, Tb, Dy, Ho, Er, Tm and Yb from the mean of their neighbours (unpublished screening measure; needs all 11 elements measured) |
 | λ space | −λ1 and −λ2 from a base-R port of BLambdaR (Anenburg and Williams, 2022; O'Neill, 2016 radii); computed only when ticked |
 
 **Units.** Mass data are normalised to mass-based standards, molar data (pmol/kg) to the standard divided by atomic mass. Mixing the two biases HREE/LREE by about 18%.
 
-**Gaps.** Missing Pr, Tb, Ho, Er, Tm, Lu are interpolated in log-normalised space, or replaced by group means, or left empty.
+**Gaps.** Missing Pr, Tb, Ho, Er, Tm, Lu are placed on the log-linear line through their neighbours as a function of atomic number (Pm omitted, Barrat and Bayon, 2024), or replaced by group means, or left empty.
 
 **Arrays and fields.** Arrays are linear mixtures in normalised space, recomputed for the chosen standard and LREE definition. Fields are 2-D kernel density estimates (`MASS::kde2d`) enclosing the chosen share of the data. Reference layers always use measured Gd and interpolated gaps; only the standard and LREE definition follow your choice.
 
@@ -47,7 +47,7 @@ To reproduce Fig. 3 of Blaser et al. (2020), choose PAAS McLennan (1989) and unt
 
 ## Verification
 
-`tests/run_tests.R` (85 checks) covers the core calculations, lambda module, arrays, fields and parsing; `tests/test_app.R` (41 checks) exercises the Shiny server logic. From the repository root:
+`tests/run_tests.R` (91 checks) covers the core calculations, lambda module, arrays, fields and parsing; `tests/test_app.R` (41 checks) exercises the Shiny server logic. From the repository root:
 
 ```sh
 export LC_ALL=C.UTF-8
@@ -100,6 +100,7 @@ MIT, see `LICENSE`.
 - Abbott, A.N., Haley, B.A., McManus, J., Reimers, C.E., 2015. The sedimentary flux of dissolved rare earth elements to the ocean. Geochim. Cosmochim. Acta 154, 186–200. https://doi.org/10.1016/j.gca.2015.01.010
 - Anenburg, M., Williams, M.J., 2022. Quantifying the tetrad effect, shape components, and Ce–Eu–Gd anomalies in rare earth element patterns. Math. Geosci. 54, 47–70. https://doi.org/10.1007/s11004-021-09959-5
 - Barrat, J.-A., Bayon, G., Tripier, R., Rouget, M.-L., Ben Salem, D., 2026. Anthropogenic gadolinium contamination in tap water across the Paris megacity: Rare earth elements trace sources and mixing. Environ. Pollut. 405, 128606. https://doi.org/10.1016/j.envpol.2026.128606
+- Barrat, J.-A., Bayon, G., 2024. Practical guidelines for representing and interpreting rare earth abundances in environmental and biological studies. Chemosphere 352, 141487. https://doi.org/10.1016/j.chemosphere.2024.141487
 - Bau, M., Dulski, P., 1996. Anthropogenic origin of positive gadolinium anomalies in river waters. Earth Planet. Sci. Lett. 143, 245–255. https://doi.org/10.1016/S0012-821X(96)00127-6
 - Bau, M., Schmidt, K., Koschinsky, A., Hein, J., Kuhn, T., Usui, A., 2014. Discriminating between different genetic types of marine ferro-manganese crusts and nodules based on rare earth elements and yttrium. Chem. Geol. 381, 1–9. https://doi.org/10.1016/j.chemgeo.2014.05.004
 - Bau, M., Schmidt, K., Pack, A., Bendel, V., Kraemer, D., 2018. The European Shale: An improved data set for normalisation of rare earth element and yttrium concentrations in environmental and biological samples from Europe. Appl. Geochem. 90, 142–149. https://doi.org/10.1016/j.apgeochem.2018.01.008

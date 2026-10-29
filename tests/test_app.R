@@ -14,7 +14,7 @@ base_inputs <- function(...) {
     gd_method = "BD1996", gd_baseline = 1, fill_var = "group", rough_on = FALSE, rough_max = 0.3,
     show_fields = TRUE, show_refpts = TRUE, show_auth = TRUE, show_detr = TRUE, show_labels = TRUE,
     ref_sel = names(REF_LABELS), lambda_space = FALSE, log_axes = FALSE, window = "auto",
-    coverage = 0.95, adjust = 1, pt_size = 3.2, user_fields = FALSE, show_legend = TRUE, min_ree = 0, req_ree = NULL,
+    coverage = 0.95, adjust = 1, pt_size = 3.2, user_fields = FALSE, ce_form = "geoPrNd", show_legend = TRUE, min_ree = 0, req_ree = NULL,
     id_extra = NULL, spec_x = "element", spec_norm2 = "(none)", spec_color = "group", spec_y = TRUE, spec_log = TRUE,
     spec_connect = TRUE, spec_points = TRUE, spec_legend = TRUE, spec_lw = 0.5), list(...))
 }
@@ -31,7 +31,7 @@ testServer(app_path, {
   check("column mapping is listed", grepl("Columns used \\(14\\)", html(output$mapping)))
   tb <- computed()
   check("computed table has the expected columns and a plot_status",
-        all(c("row", "sample", "group", "HREE/LREE", "MREE/MREE*", "Ce/Ce*", "Gd/Gd*", "REE_roughness", "plot_status", "normalisation", "LREE_definition", "gap_method", "Gd_handling") %in% names(tb)) &&
+        all(c("row", "sample", "group", "HREE/LREE", "MREE/MREE*", "Ce/Ce*", "Gd/Gd*", "REE_roughness", "plot_status", "normalisation", "LREE_definition", "gap_method", "Gd_handling", "Ce_anomaly", "La/La*") %in% names(tb)) &&
         identical(tb$row, 1:26))
   check("figure object builds", inherits(fig(), "ggplot"))
   f <- output$dl_csv

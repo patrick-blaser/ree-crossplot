@@ -245,4 +245,34 @@ lg <- plot_limits(ref0, arr0, NULL, "ratio", "auto", ext = list(x = c(0.2, 12), 
 check("log window holds the field outlines", lg$xlim[1] < 0.2 && lg$xlim[2] > 12 && lg$ylim[1] < 0.4)
 check("figure without legend carries limits", {g <- plot_martin(ref0, arr0, NULL, list(legend = FALSE, log = TRUE)); is.list(attr(g, "limits"))})
 
+# ---- anomalies and gap filling after Barrat and Bayon (2024) -------------------------------------
+lin <- matrix(exp(-0.08 * (REE_Z - 64)), 1, 14, dimnames = list(NULL, REE))   # straight in log-Z (Pm omitted)
+nrm <- NORMALISERS$PAAS_Pourmand2012
+conc_of <- function(m) as.data.frame(m * rep(nrm, each = nrow(m)))
+filled_ok <- function(missing, back) {
+  m <- lin; m[, missing] <- NA
+  f <- ree_fill(m)$n
+  all(abs(f[, back] / lin[, back] - 1) < 1e-12)
+}
+check("gap filling recovers Pr, Tb, Ho, Tm, Er and Lu on a pattern straight in atomic number (Pm omitted)",
+      filled_ok("Pr", "Pr") && filled_ok("Tb", "Tb") && filled_ok("Ho", "Ho") && filled_ok("Tm", "Tm") &&
+      filled_ok(c("Tm", "Er"), "Tm") && filled_ok("Lu", "Lu") && filled_ok(c("La", "Pr"), "Pr"))
+cx <- lin; cx[, "Ce"] <- cx[, "Ce"] * 0.5
+r_geo <- ree_ratios(conc_of(cx), "mass", default_cfg())
+r_ar  <- ree_ratios(conc_of(cx), "mass", default_cfg(ce_form = "arithLaPr"))
+r_gl  <- ree_ratios(conc_of(cx), "mass", default_cfg(ce_form = "geoLaPr"))
+check("Ce/Ce*: both geometric forms return the imposed 0.5 exactly (no La anomaly); the arithmetic form does not",
+      near(r_geo$Ce_Ceanom, 0.5, 1e-12) && near(r_gl$Ce_Ceanom, 0.5, 1e-12) && abs(r_ar$Ce_Ceanom - 0.5) > 1e-3 &&
+      near(r_ar$Ce_Ceanom, 2 * 0.5 * lin[, "Ce"] / (lin[, "La"] + lin[, "Pr"]), 1e-12))
+la <- lin; la[, "La"] <- la[, "La"] * 2
+check("with a La anomaly (x2) the La-Pr forms of Ce/Ce* are biased, the Pr-Nd form is not",
+      near(ree_ratios(conc_of(la), "mass", default_cfg())$Ce_Ceanom, 1, 1e-12) &&
+      abs(ree_ratios(conc_of(la), "mass", default_cfg(ce_form = "geoLaPr"))$Ce_Ceanom - 1) > 0.2)
+check("La/La* = La Nd^2 / Pr^3 returns the imposed factor", near(ree_ratios(conc_of(la), "mass", default_cfg())$La_Laanom, 2, 1e-12))
+gx <- lin; gx[, "Gd"] <- gx[, "Gd"] * 3
+check("Gd/Gd*: geometric methods (Sm-Tb, Nd-Sm, Tb-Dy) return the imposed factor 3 exactly",
+      all(vapply(c("BDgeo", "SmNd", "TbDy"), function(m) near(ree_ratios(conc_of(gx), "mass", default_cfg(gd_method = m))$Gd_Gdstar, 3, 1e-12), logical(1))))
+check("Gd/Gd* with the arithmetic Bau-Dulski estimate is close to, but not exactly, 3 on the same pattern",
+      {v <- ree_ratios(conc_of(gx), "mass", default_cfg(gd_method = "BD1996"))$Gd_Gdstar; abs(v - 3) < 0.02 && abs(v - 3) > 1e-9})
+
 cat("\nAll", n_pass, "checks passed.\n")

@@ -4,7 +4,7 @@
 # Default definitions (Martin et al., 2010; Blaser et al., 2020):
 #   HREE/LREE     = (Tm + Yb + Lu) / (La + Pr + Nd)
 #   MREE/MREE*    = (Gd + Tb + Dy) / mean(HREE, LREE)      [HREE, LREE = sums above]
-#   Ce/Ce*        = 2 * Ce / (La + Pr)
+#   Ce/Ce*        = Ce * Nd / Pr^2 (default; Barrat and Bayon, 2024), or 2 Ce / (La + Pr)
 # with every element first normalised to a shale (default PAAS, Pourmand et al., 2012).
 # Options (see `default_cfg()`): normalisation standard, LREE definition (La-Pr-Nd or
 # Pr-Nd-Sm), gap handling, and how a (possibly anthropogenic) Gd is treated.
@@ -91,6 +91,7 @@ MREE_SET <- c("Gd", "Tb", "Dy")
 HREE_SET <- c("Tm", "Yb", "Lu")
 
 ratio_cols <- c("HREE_LREE", "MREE_MREEstar", "Ce_Ceanom", "Eu_Euanom")
+`%||%` <- function(a, b) if (is.null(a)) b else a
 
 #' All user-selectable calculation options in one list.
 #' @field norm id in NORMALISERS or "custom" (then `norm_custom` = named ppm vector)
@@ -98,12 +99,14 @@ ratio_cols <- c("HREE_LREE", "MREE_MREEstar", "Ce_Ceanom", "Eu_Euanom")
 #' @field gap "interpolate" (log-linear neighbours), "groupmean" (mean of the measured members
 #'   of each REE group) or "none"
 #' @field gd "measured" or "ignore" (replace Gd by baseline * Gd*)
-#' @field gd_method "BD1996" (Bau and Dulski), "SmNd" (Sm^2/Nd), "TbDy" (mean of Tb and Dy),
+#' @field gd_method "BD1996" (Bau and Dulski), "BDgeo", "SmNd" (Sm^2/Nd), "TbDy" (Tb^2/Dy),
 #'   "BLambdaR" (polynomial fit without Gd, Ce, Eu)
 #' @field gd_baseline natural Gd/Gd* that is divided out (1 = none)
+#' @field ce_form definition of Ce/Ce*: "geoPrNd" (Ce Nd / Pr^2, Barrat and Bayon 2024; default),
+#'   "arithLaPr" (2 Ce / (La + Pr), as in Martin et al. 2010 / Blaser et al. 2020) or "geoLaPr" (Ce / sqrt(La Pr))
 default_cfg <- function(...) {
   modifyList(list(norm = DEFAULT_NORM, norm_custom = NULL, lree = "LaPrNd", gap = "interpolate",
-                  gd = "measured", gd_method = "BD1996", gd_baseline = 1), list(...))
+                  gd = "measured", gd_method = "BD1996", gd_baseline = 1, ce_form = "geoPrNd"), list(...))
 }
 
 #' Normalising vector (ppm, mass basis) for a configuration
@@ -142,20 +145,33 @@ ree_normalise <- function(conc, basis = "mass", norm = NORMALISERS[[DEFAULT_NORM
   n
 }
 
+# atomic numbers (the REE sit at equal steps of Z; Pm, Z = 61, is radioactive and never measured)
+REE_Z <- c(La = 57, Ce = 58, Pr = 59, Nd = 60, Sm = 62, Eu = 63, Gd = 64, Tb = 65, Dy = 66, Ho = 67,
+           Er = 68, Tm = 69, Yb = 70, Lu = 71)
+
+#' Value of element `el` on the straight line (in log space) through elements a and b, as a function
+#' of atomic number: interpolation between them or extrapolation beyond them (geometric, after
+#' Barrat and Bayon, 2024). Missing Pm is accounted for because Z, not the position in the table, is used.
+zline <- function(x, el, a, b) {
+  w <- (REE_Z[[el]] - REE_Z[[a]]) / (REE_Z[[b]] - REE_Z[[a]])
+  unname(exp(log(x[, a]) + w * (log(x[, b]) - log(x[, a]))))
+}
+
 #' Fill gaps in normalised REE patterns by log-linear interpolation of neighbours.
-#' Pr, Tb, Ho, Tm are geometric means of their neighbours (Pr falls back on extrapolation from
-#' Nd-Sm when La is missing, Tm on Ho-Yb when Er is missing, Er on Ho-Tm); Lu is extrapolated
-#' from the Tm-Yb slope. Returns the filled matrix and a logical matrix flagging estimates.
+#' Pr (from La and Nd; if La is missing extrapolated from Nd and Sm), Tb, Ho, Tm (from Er and Yb;
+#' else Ho and Yb), Er (from Ho and Tm) are placed on the log-linear line through their neighbours
+#' at the right atomic number; Lu is extrapolated from the Tm-Yb slope. Returns the filled matrix
+#' and a logical matrix flagging estimates.
 ree_fill <- function(n) {
   rules <- list(
-    Pr = function(x) { v <- sqrt(x[, "La"] * x[, "Nd"]); i <- is.na(v)
-                       if (any(i)) v[i] <- x[i, "Nd"]^2 / x[i, "Sm"]; v },
-    Tb = function(x) sqrt(x[, "Gd"] * x[, "Dy"]),
-    Ho = function(x) sqrt(x[, "Dy"] * x[, "Er"]),
-    Tm = function(x) { v <- sqrt(x[, "Er"] * x[, "Yb"]); i <- is.na(v)
-                       if (any(i)) v[i] <- sqrt(x[i, "Ho"] * x[i, "Yb"]); v },
-    Er = function(x) sqrt(x[, "Ho"] * x[, "Tm"]),
-    Lu = function(x) x[, "Yb"]^2 / x[, "Tm"]
+    Pr = function(x) { v <- zline(x, "Pr", "La", "Nd"); i <- is.na(v)
+                       if (any(i)) v[i] <- zline(x[i, , drop = FALSE], "Pr", "Nd", "Sm"); v },
+    Tb = function(x) zline(x, "Tb", "Gd", "Dy"),
+    Ho = function(x) zline(x, "Ho", "Dy", "Er"),
+    Tm = function(x) { v <- zline(x, "Tm", "Er", "Yb"); i <- is.na(v)
+                       if (any(i)) v[i] <- zline(x[i, , drop = FALSE], "Tm", "Ho", "Yb"); v },
+    Er = function(x) zline(x, "Er", "Ho", "Tm"),
+    Lu = function(x) zline(x, "Lu", "Tm", "Yb")
   )
   filled <- matrix(FALSE, nrow(n), ncol(n), dimnames = dimnames(n))
   for (pass in 1:2) {
@@ -171,13 +187,16 @@ ree_fill <- function(n) {
   list(n = n, filled = filled)
 }
 
-#' Geogenic ("natural") Gd, Gd*, from PAAS-normalised neighbours
-#' BD1996: Bau and Dulski (1996); SmNd: Gd* = Sm^2/Nd (Kulaksiz and Bau, 2007; Barrat et al. 2026)
+#' Geogenic ("natural") Gd, Gd*, from shale-normalised neighbours
+#' BD1996: Bau and Dulski (1996), 0.33 Sm + 0.67 Tb (arithmetic); BDgeo: its geometric version,
+#' Sm^(1/3) Tb^(2/3) (Barrat and Bayon, 2024); SmNd: Sm^2/Nd (Kulaksiz and Bau, 2007; Barrat and
+#' Bayon, 2024); TbDy: extrapolation Tb^2/Dy (Barrat and Bayon, 2024)
 gd_star <- function(n, method = "BD1996") {
   switch(method,
     BD1996 = unname(0.33 * n[, "Sm"] + 0.67 * n[, "Tb"]),
+    BDgeo  = unname(n[, "Sm"]^(1/3) * n[, "Tb"]^(2/3)),
     SmNd   = unname(n[, "Sm"]^2 / n[, "Nd"]),
-    TbDy   = unname((n[, "Tb"] + n[, "Dy"]) / 2),
+    TbDy   = unname(n[, "Tb"]^2 / n[, "Dy"]),
     stop("Unknown Gd method: ", method))
 }
 
@@ -201,7 +220,11 @@ ratios_from_normalised <- function(n, filled = NULL, cfg = default_cfg()) {
   out <- data.frame(
     HREE_LREE     = unname(H / L),
     MREE_MREEstar = unname(M / ((H + L) / 2)),
-    Ce_Ceanom     = unname(2 * n[, "Ce"] / (n[, "La"] + n[, "Pr"])),
+    Ce_Ceanom     = unname(switch(cfg$ce_form %||% "geoPrNd",
+                                  arithLaPr = 2 * n[, "Ce"] / (n[, "La"] + n[, "Pr"]),
+                                  geoLaPr   = n[, "Ce"] / sqrt(n[, "La"] * n[, "Pr"]),
+                                  n[, "Ce"] * n[, "Nd"] / n[, "Pr"]^2)),
+    La_Laanom     = unname(n[, "La"] * n[, "Nd"]^2 / n[, "Pr"]^3),
     Eu_Euanom     = unname(n[, "Eu"] / sqrt(n[, "Sm"] * n[, "Gd"])),
     row.names = NULL
   )
@@ -210,7 +233,7 @@ ratios_from_normalised <- function(n, filled = NULL, cfg = default_cfg()) {
   out
 }
 
-#' Compute HREE/LREE, MREE/MREE*, Ce/Ce*, Eu/Eu*, Gd/Gd*, Gd_anth and REE roughness from raw
+#' Compute HREE/LREE, MREE/MREE*, Ce/Ce*, La/La*, Eu/Eu*, Gd/Gd*, Gd_anth and REE roughness from raw
 #' concentrations.
 #' @param conc table with columns La..Lu (units: see `basis`)
 #' @param basis "mass"/"molar", scalar or per row
@@ -222,7 +245,7 @@ ree_ratios <- function(conc, basis = "mass", cfg = default_cfg(), lambda_gd_anom
   n <- ree_normalise(conc, basis, norm_ppm(cfg))
   nr <- nrow(n)
   if (nr == 0) return(data.frame(HREE_LREE = numeric(), MREE_MREEstar = numeric(),
-                                 Ce_Ceanom = numeric(), Eu_Euanom = numeric(), n_estimated = integer(),
+                                 Ce_Ceanom = numeric(), La_Laanom = numeric(), Eu_Euanom = numeric(), n_estimated = integer(),
                                  Gd_Gdstar = numeric(), Gd_anth = numeric(), REE_rough = numeric()))
   # Gd anomaly of the measured pattern
   gs <- if (identical(cfg$gd_method, "BLambdaR")) {
@@ -254,7 +277,7 @@ ree_ratios <- function(conc, basis = "mass", cfg = default_cfg(), lambda_gd_anom
 check_ree_columns <- function(present, cfg = default_cfg()) {
   need <- list()   # each entry: alternatives (at least one must be present)
   lre <- LREE_SETS[[cfg$lree]]
-  gd_inputs <- switch(cfg$gd_method, BD1996 = c("Sm", "Tb"), SmNd = c("Sm", "Nd"), TbDy = c("Tb", "Dy"),
+  gd_inputs <- switch(cfg$gd_method, BD1996 = c("Sm", "Tb"), BDgeo = c("Sm", "Tb"), SmNd = c("Sm", "Nd"), TbDy = c("Tb", "Dy"),
                       BLambdaR = REE)
   ignore <- identical(cfg$gd, "ignore")
   if (identical(cfg$gap, "interpolate")) {

@@ -129,7 +129,7 @@ prepare_user_data <- function(df, mode = "concentrations", basis = "mass", cfg =
     lg <- if (identical(cfg$gd_method, "BLambdaR")) lambda_gd_anomaly(conc, b) else NULL
     r <- ree_ratios(conc, b, cfg, lambda_gd_anom = lg)
     out <- data.frame(row = row_id, sample = sample, group = group, x = r$HREE_LREE, y = r$MREE_MREEstar,
-                      Ce_Ceanom = r$Ce_Ceanom, Eu_Euanom = r$Eu_Euanom,
+                      Ce_Ceanom = r$Ce_Ceanom, La_Laanom = r$La_Laanom, Eu_Euanom = r$Eu_Euanom,
                       Gd_Gdstar = r$Gd_Gdstar, Gd_anth = r$Gd_anth, REE_rough = r$REE_rough,
                       n_estimated = r$n_estimated, n_REE_measured = rowSums(meas[, REE, drop = FALSE]),
                       basis = rep_len(b, nrow(df)), stringsAsFactors = FALSE)
