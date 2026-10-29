@@ -1,0 +1,6 @@
+"id","label","basis","source","La","Ce","Pr","Nd","Sm","Eu","Gd","Tb","Dy","Ho","Er","Tm","Yb","Lu"
+"seawater_HREE","HREE-rich seawater","molar","Hathorne et al. (2015), 47.66S 4.27E, 400 m (pmol/kg)",16.6,1.9,2.33,9.6,1.86,0.48,2.84,0.46,3.83,1.17,4.23,0.65,4.56,0.82
+"nodule_CCFZ","MREE-rich diagenetic Fe-Mn nodule","mass","Bau et al. (2014), Clarion-Clipperton Fracture Zone (ug/g)",124,394,37.8,150,37.5,9.32,36.9,5.47,30.2,5.41,14.4,1.87,12.8,1.8
+"crust_GAC","Greenland Archaean crust (GAC)","mass","Wedepohl et al. (1991)",20.11738,38.88983,3.80427,14.17215,2.546137,0.6403378,1.906309,0.3304979,1.272184,0.297,0.7530612,,0.6467485,0.09947629
+"MORB_Gale2013","Mean MORB","mass","Gale et al. (2013) (ug/g)",5.21,14.86,2.24,12.03,3.82,1.36,4.99,0.9,6.08,1.28,3.79,,3.63,0.53
+"crust_CPS","Canadian Precambrian shield (CPS)","mass","Shaw et al. (1986)",32.48957,65.41469,6.463035,24.47058,4.252992,0.7692264,2.659301,0.4541985,2.528302,0.5607,,,1.358172,0.2107089

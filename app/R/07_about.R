@@ -1,0 +1,113 @@
+# Text for the "About" tab (kept in R/ so the README and the app share one source of truth)
+# Reference details were checked by the author (October 2026).
+
+REFERENCES <- c(
+  "Abbott, A.N., Haley, B.A., McManus, J., Reimers, C.E., 2015. The sedimentary flux of dissolved rare earth elements to the ocean. Geochim. Cosmochim. Acta 154, 186–200. https://doi.org/10.1016/j.gca.2015.01.010",
+  "Anenburg, M., Williams, M.J., 2022. Quantifying the tetrad effect, shape components, and Ce–Eu–Gd anomalies in rare earth element patterns. Math. Geosci. 54, 47–70. https://doi.org/10.1007/s11004-021-09959-5",
+  "Barrat, J.-A., Bayon, G., Tripier, R., Rouget, M.-L., Ben Salem, D., 2026. Anthropogenic gadolinium contamination in tap water across the Paris megacity: Rare earth elements trace sources and mixing. Environ. Pollut. 405, 128606. https://doi.org/10.1016/j.envpol.2026.128606",
+  "Bau, M., Dulski, P., 1996. Anthropogenic origin of positive gadolinium anomalies in river waters. Earth Planet. Sci. Lett. 143, 245–255. https://doi.org/10.1016/S0012-821X(96)00127-6",
+  "Bau, M., Schmidt, K., Koschinsky, A., Hein, J., Kuhn, T., Usui, A., 2014. Discriminating between different genetic types of marine ferro-manganese crusts and nodules based on rare earth elements and yttrium. Chem. Geol. 381, 1–9. https://doi.org/10.1016/j.chemgeo.2014.05.004",
+  "Bau, M., Schmidt, K., Pack, A., Bendel, V., Kraemer, D., 2018. The European Shale: An improved data set for normalisation of rare earth element and yttrium concentrations in environmental and biological samples from Europe. Appl. Geochem. 90, 142–149. https://doi.org/10.1016/j.apgeochem.2018.01.008",
+  "Blaser, P., Gutjahr, M., Pöppelmeier, F., Frank, M., Kaboth-Bahr, S., Lippold, J., 2020. Labrador Sea bottom water provenance and REE exchange during the past 35,000 years. Earth Planet. Sci. Lett. 542, 116299. https://doi.org/10.1016/j.epsl.2020.116299",
+  "Crocket, K.C., Hill, E., Abell, R.E., Johnson, C., Gary, S.F., Brand, T., Hathorne, E.C., 2018. Rare Earth Element Distribution in the NE Atlantic: Evidence for Benthic Sources, Longevity of the Seawater Signal, and Biogeochemical Cycling. Front. Mar. Sci. 5, 147. https://doi.org/10.3389/fmars.2018.00147",
+  "Du, J., Haley, B.A., Mix, A.C., 2016. Neodymium isotopes in authigenic phases, bottom waters and detrital sediments in the Gulf of Alaska and their implications for paleo-circulation reconstruction. Geochim. Cosmochim. Acta 193, 14–35. https://doi.org/10.1016/j.gca.2016.08.005",
+  "Filippova, A., Frank, M., Kienast, M., Rickli, J., Hathorne, E., Yashayaev, I.M., Pahnke, K., 2017. Water mass circulation and weathering inputs in the Labrador Sea based on coupled Hf–Nd isotope compositions and rare earth element distributions. Geochim. Cosmochim. Acta 199, 164–184. https://doi.org/10.1016/j.gca.2016.11.024",
+  "Gale, A., Dalton, C.A., Langmuir, C.H., Su, Y., Schilling, J.-G., 2013. The mean composition of ocean ridge basalts. Geochem. Geophys. Geosyst. 14, 489–518. https://doi.org/10.1029/2012GC004334",
+  "GEOTRACES Intermediate Data Product Group, 2025. The GEOTRACES Intermediate Data Product 2025 (IDP2025). https://doi.org/10.5285/42C92148-8D03-8BE6-E063-7086ABC09F0C",
+  "Hathorne, E.C., Stichel, T., Brück, B., Frank, M., 2015. Rare earth element distribution in the Atlantic sector of the Southern Ocean: The balance between particle scavenging and vertical supply. Mar. Chem. 177, 157–171. https://doi.org/10.1016/j.marchem.2015.03.011",
+  "Kulaksız, S., Bau, M., 2007. Contrasting behaviour of anthropogenic gadolinium and natural rare earth elements in estuaries and the gadolinium input into the North Sea. Earth Planet. Sci. Lett. 260, 361–371. https://doi.org/10.1016/j.epsl.2007.06.016",
+  "Martin, E.E., Blair, S.W., Kamenov, G.D., Scher, H.D., Bourbon, E., Basak, C., Newkirk, D.N., 2010. Extraction of Nd isotopes from bulk deep sea sediments for paleoceanographic studies on Cenozoic time scales. Chem. Geol. 269, 414–431. https://doi.org/10.1016/j.chemgeo.2009.10.016",
+  "McLennan, S.M., 1989. Chapter 7. Rare earth elements in sedimentary rocks: influence of provenance and sedimentary processes, in: Geochemistry and Mineralogy of Rare Earth Elements. De Gruyter, Berlin, Boston. https://doi.org/10.1515/9781501509032-010",
+  "Nance, W.B., Taylor, S.R., 1976. Rare earth element patterns and crustal evolution—I. Australian post-Archean sedimentary rocks. Geochim. Cosmochim. Acta 40, 1539–1551.",
+  "O'Neill, H.St.C., 2016. The smoothness and shapes of chondrite-normalized rare earth element patterns in basalts. J. Petrol. 57, 1463–1508. https://doi.org/10.1093/petrology/egw047",
+  "Osborne, A.H., Hathorne, E.C., Schijf, J., Plancherel, Y., Böning, P., Frank, M., 2017. The potential of sedimentary foraminiferal rare earth element patterns to trace water masses in the past. Geochem. Geophys. Geosyst. 18, 1550–1568. https://doi.org/10.1002/2016GC006782",
+  "Palmer, M.R., 1985. Rare earth elements in foraminifera tests. Earth Planet. Sci. Lett. 73, 285–298. https://doi.org/10.1016/0012-821X(85)90077-9",
+  "Pourmand, A., Dauphas, N., Ireland, T.J., 2012. A novel extraction chromatography and MC-ICP-MS technique for rapid analysis of REE, Sc and Y: Revising CI-chondrite and Post-Archean Australian Shale (PAAS) abundances. Chem. Geol. 291, 38–54. https://doi.org/10.1016/j.chemgeo.2011.08.011",
+  "Shannon, R.D., 1976. Revised effective ionic radii and systematic studies of interatomic distances in halides and chalcogenides. Acta Crystallogr. A 32, 751–767. https://doi.org/10.1107/S0567739476001551",
+  "Shaw, D.M., Cramer, J.J., Higgins, M.D., Truscott, M.G., 1986. Composition of the Canadian Precambrian shield and the continental crust of the earth. Geol. Soc. Lond. Spec. Publ. 24, 275–282. https://doi.org/10.1144/GSL.SP.1986.024.01.24",
+  "Taylor, S.R., McLennan, S.M., 1985. The Continental Crust: Its Composition and Evolution. Blackwell, Oxford.",
+  "Wedepohl, K.H., Heinrichs, H., Bridgwater, D., 1991. Chemical characteristics and genesis of the quartz-feldspathic rocks in the Archean crust of Greenland. Contrib. Mineral. Petrol. 107, 163–179. https://doi.org/10.1007/BF00310705",
+  "Zheng, X.-Y., Plancherel, Y., Saito, M.A., Scott, P.M., Henderson, G.M., 2016. Rare earth elements (REEs) in the tropical South Atlantic and quantitative deconvolution of their non-conservative behavior. Geochim. Cosmochim. Acta 177, 217–237. https://doi.org/10.1016/j.gca.2016.01.018"
+)
+
+# short reference-data labels shown in the sidebar (key = value of `ref` in reference_data.csv)
+REF_LABELS <- c(
+  Osborne2017  = "Foraminifera: Osborne et al. (2017)",
+  Palmer1985   = "Foraminifera: Palmer (1985)",
+  Abbott2015   = "Pore water: Abbott et al. (2015), Oregon & California margins",
+  Crocket2018  = "Seawater: Crocket et al. (2018)",
+  Hathorne2015 = "Seawater: Hathorne et al. (2015)",
+  Zheng2016    = "Seawater: Zheng et al. (2016)",
+  GEOTRACES2025_shallow = "Seawater: GEOTRACES IDP2025, ≤ 200 m",
+  GEOTRACES2025_deep    = "Seawater: GEOTRACES IDP2025, > 200 m"
+)
+
+about_ui <- function() {
+  shiny::tagList(
+    shiny::h4("What the plot shows"),
+    shiny::p("Shale-normalised REE patterns are reduced to two numbers: the REE slope ",
+             shiny::strong("HREE/LREE = (Tm+Yb+Lu)/(La+Pr+Nd)"), " and the mid-REE bulge ",
+             shiny::strong("MREE/MREE* = (Gd+Tb+Dy) / mean(HREE, LREE)"),
+             ", where HREE and LREE are the sums in the slope definition (Martin et al., 2010; ",
+             "Blaser et al., 2020). The cerium anomaly is Ce/Ce* = 2Ce/(La+Pr). The diagram follows ",
+             "Du et al. (2016) and reproduces Fig. 3 of Blaser et al. (2020) when PAAS from McLennan (1989) is selected."),
+    shiny::tags$ul(
+      shiny::tags$li(shiny::strong("Authigenic array (dashed): "),
+        "mixing between the most HREE-rich seawater of the compilation (Hathorne et al., 2015) and the most ",
+        "MREE-rich diagenetic Fe-Mn nodule (Bau et al., 2014), following Du et al. (2016). Mixing is linear in ",
+        "concentration with log-spaced mixing fractions."),
+      shiny::tags$li(shiny::strong("Detrital array (grey): "),
+        "area spanned by mixing between mean MORB (Gale et al., 2013), Greenland Archaean crust (GAC; Wedepohl et al., 1991) ",
+        "and the Canadian Precambrian shield (CPS; Shaw et al., 1986)."),
+      shiny::tags$li(shiny::strong("Coloured fields: "),
+        "highest-density regions of a 2-D Gaussian kernel density estimate (linear axes) of published foraminiferal ",
+        "(purple), pore-water (green) and seawater (blue) data. The slider sets the share of the data inside the outline.")
+    ),
+    shiny::h4("Calculation options"),
+    shiny::tags$ul(
+      shiny::tags$li(shiny::strong("Normalisation: "), "PAAS (Pourmand et al., 2012; default), PAAS (McLennan, 1989; the same values as ",
+        "the Taylor and McLennan, 1985, tabulation of Nance and Taylor, 1976), the European Shale (Bau et al., 2018), NASC (McLennan, 1989), ",
+        "CI chondrite (Pourmand et al., 2012; O'Neill, 2016) or an own one-row reference (mass basis). Arrays and fields are recomputed with the chosen standard."),
+      shiny::tags$li(shiny::strong("Units: "), "mass-based data are normalised to the mass-based standard, molar data (pmol/kg, ...) to the standard divided by the atomic masses. ",
+        "This is identical to converting molar data to mass first; normalising molar data to a mass-based standard would bias HREE/LREE by up to ~20%. ",
+        "Foraminifera are treated as mass-based, seawater and pore water as molar."),
+      shiny::tags$li(shiny::strong("LREE definition: "), "La-Pr-Nd (Martin et al., 2010; default) or Pr-Nd-Sm, which is insensitive to the La anomaly of seawater and does not need La."),
+      shiny::tags$li(shiny::strong("Missing elements: "), "interpolated from neighbours in normalised log space (Pr, Tb, Tm, Lu; Ho, Er as intermediates), ",
+        "replaced by the mean of the measured members of their group, or not tolerated."),
+      shiny::tags$li(shiny::strong("Gadolinium: "), "Gd/Gd* is the measured Gd divided by a geogenic estimate: Bau and Dulski (1996; 0.33 Sm + 0.67 Tb), ",
+        "Sm²/Nd (Kulaksız and Bau, 2007; used by Barrat et al., 2026), the mean of Tb and Dy, or a polynomial fit that leaves out Gd, Ce and Eu (Anenburg and Williams, 2022). ",
+        "Anthropogenic Gd = Gd (1 − baseline/anomaly), in the units of the input. Natural samples are not exactly at 1 (typically 1.1–1.2 with Bau and Dulski), ",
+        "so a baseline can be divided out. 'Ignore Gd' replaces the measured Gd by baseline × Gd* before the ratios are calculated."),
+      shiny::tags$li(shiny::strong("REE roughness: "), "scatter of the Nd-Lu pattern around its smooth neighbours (unpublished screening measure; needs Pr, Nd, Sm, Gd-Lu measured). ",
+        "High values point to concentrations near the detection limit or oxide interferences. Samples above the chosen value can be left out; the filter only applies to your data."),
+      shiny::tags$li(shiny::strong("Screening by gaps: "), "samples can be left out when fewer than a chosen number of the 14 REE were measured, or when chosen elements are missing ",
+        "(measured values only; interpolated gaps do not count). In lambda space a pattern needs at least 10 usable elements (Ce and Eu are not used), otherwise it gets no lambda values."),
+      shiny::tags$li(shiny::strong("Plot window: "), "by default the window holds the arrays, the field outlines and your data; with 200 or more samples the extreme 0.5% at either end are left off-scale ",
+        "(the status line counts samples outside the window)."),
+      shiny::tags$li(shiny::strong("Lambda space (experimental): "), "the pattern is fitted by orthogonal polynomials of the ionic radius (O'Neill, 2016; Anenburg and Williams, 2022). ",
+        "−λ1 (slope) and −λ2 (curvature) replace HREE/LREE and MREE/MREE*. Reference data and arrays were fitted with Ce and Eu excluded and all tetrad terms; ",
+        "the lambda roughness replaces the REE roughness in this mode.")
+    ),
+    shiny::h4("Spectra"),
+    shiny::p("The Spectra tab shows the REE patterns of your data, normalised to the chosen reference (optionally divided by one element, which removes absolute concentration differences), ",
+             "against the element or against the effective ionic radius of the 3+ ions (6-coordinated; Shannon, 1976). Y is shown where the data and the reference have it; ",
+             "on the radius axis it is a separate point. Molar data are taken as pmol/kg. Measured values only. The normalised values can be downloaded."),
+    shiny::h4("Reference data"),
+    shiny::p("Foraminifera, pore water and seawater compilations (see References), plus the GEOTRACES IDP2025 seawater data split at 200 m water depth. ",
+             "GEOTRACES rows were excluded when flagged, lacking La or too incomplete for the ratios, or identical to samples already in the compilation. ",
+             "All ratios are recomputed from the raw concentrations."),
+    shiny::h4("Your data"),
+    shiny::tags$ul(
+      shiny::tags$li("CSV/TSV with one row per sample. Concentration columns are recognised by the element symbol at the start of the column name (La, Ce, …, Lu; 'La_ppm' and 'Nd (ppb)' work). The columns that were used are listed below the file selector."),
+      shiny::tags$li("Optional columns: a sample ID, a grouping column (symbols and colours; single groups can be hidden), a 'basis' column ('mass' or 'molar') that overrides the global setting row by row, and any numeric column for symbol fill (e.g. age, depth)."),
+      shiny::tags$li("Alternatively upload pre-computed, normalised ratios and pick the two columns."),
+      shiny::tags$li("Uploads are processed in your browser; nothing is sent to a server.")
+    ),
+    shiny::p(shiny::strong("Identifying samples in the downloads: "), "the results table contains every row of the uploaded file in the original order, ",
+             "also rows that cannot be plotted (see plot_status). The column 'row' is the row number in your file (header not counted), so it identifies a sample uniquely; ",
+             "further columns of your file can be added under 'Your data'. The calculation settings (normalisation, LREE definition, gap and Gd handling) are written into the table."),
+    shiny::p("Analytical reproducibility of the published leachate data is ±0.05 (MREE/MREE*) and ±0.09 (HREE/LREE)."),
+    shiny::h4("References"),
+    shiny::tags$ul(lapply(REFERENCES, function(r) shiny::tags$li(r)))
+  )
+}
