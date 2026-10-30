@@ -8,6 +8,8 @@ An interactive R Shiny tool that places your rare earth element (REE) data on th
 
 The app runs entirely in the browser (Shinylive / WebAssembly), so uploaded data never leave your computer.
 
+**Use it online:** [patrick-blaser.github.io/Other/REE-crossplot](https://patrick-blaser.github.io/Other/REE-crossplot)
+
 ## How to cite
 
 The MREE/MREE\* vs HREE/LREE diagram was introduced by Martin et al. (2010); Du et al. (2016) added the authigenic and detrital arrays, and Blaser et al. (2020) the reference fields of foraminifera, pore water and seawater. **Whoever uses this tool or its figures should cite Blaser et al. (2020)**; citing Martin et al. (2010) and Du et al. (2016) as well is optional but appreciated. The lambda option follows O'Neill (2016) and Anenburg and Williams (2022); see also the original web app [BLambdaR](https://lambdar.rses.anu.edu.au/blambdar/).
@@ -69,20 +71,9 @@ install.packages(c("shiny", "ggplot2", "MASS"))
 shiny::runApp("app")
 ```
 
-## Deploy on GitHub Pages and embed on a website
+## Deployment
 
-1. Create an empty public repository `ree-crossplot` on GitHub, then from this folder: `git remote add origin git@github.com:<user>/ree-crossplot.git` and `git push -u origin main`.
-2. In the repository, *Settings > Pages > Source*: **GitHub Actions**.
-3. The workflow `.github/workflows/deploy.yml` runs the tests, exports the app with `shinylive::export("app", "_site")` and publishes it at `https://<user>.github.io/ree-crossplot/` (check the *Actions* tab; start it by hand with *Run workflow* if needed). Open the URL and test the app once; the first load downloads the R environment (WebAssembly) and takes a while.
-4. In the repository of the website (Beautiful Jekyll), copy `embed/REE-crossplot.md` to `Other/REE-crossplot.md`, replace `YOUR-GITHUB-USERNAME` (three places) and add the page to the navigation in `_config.yml`:
-
-```yaml
-  Other:
-   - Incomplete Paleo Data Demo: "Other/PaleoDataDemo"
-   - REE cross-plot: "Other/REE-crossplot"
-```
-
-5. Commit and push the website; Jekyll rebuilds within a minute or two. Later changes to the app only need a push to the app repository.
+The app is published with GitHub Pages: each push to the repository runs the workflow `.github/workflows/deploy.yml`, which runs the tests, exports the app with `shinylive::export("app", "_site")` and publishes it at [patrick-blaser.github.io/ree-crossplot](https://patrick-blaser.github.io/ree-crossplot/) (*Settings > Pages > Source*: **GitHub Actions**; progress in the *Actions* tab, or start it by hand with *Run workflow*). The tool is presented, with a short introduction and the citation request, at [patrick-blaser.github.io/Other/REE-crossplot](https://patrick-blaser.github.io/Other/REE-crossplot).
 
 ## R functions
 
