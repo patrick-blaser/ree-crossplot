@@ -1,12 +1,16 @@
 # REE cross-plot: MREE/MREE\* vs HREE/LREE
 
-An interactive R Shiny tool that places your rare earth element (REE) data on the MREE/MREE\* vs HREE/LREE cross-plot (idea after Du et al., 2016; Blaser et al., 2020, Fig. 3), together with
+An interactive R Shiny tool that places your rare earth element (REE) data on the MREE/MREE\* vs HREE/LREE cross-plot (Martin et al., 2010; arrays added by Du et al., 2016; reference fields added by Blaser et al., 2020, Fig. 3), together with
 
 - the marine **authigenic array** (seawater to Fe-Mn nodule mixing),
 - the **detrital array** (MORB, Greenland Archaean crust and Canadian Precambrian shield mixing),
 - kernel-density **fields** of published foraminifera, pore water and seawater data (including GEOTRACES IDP2025 seawater, split at 200 m).
 
 The app runs entirely in the browser (Shinylive / WebAssembly), so uploaded data never leave your computer.
+
+## How to cite
+
+The MREE/MREE\* vs HREE/LREE diagram was introduced by Martin et al. (2010); Du et al. (2016) added the authigenic and detrital arrays, and Blaser et al. (2020) the reference fields of foraminifera, pore water and seawater. **Whoever uses this tool or its figures should cite Blaser et al. (2020)**; citing Martin et al. (2010) and Du et al. (2016) as well is optional but appreciated. The lambda option follows O'Neill (2016) and Anenburg and Williams (2022); see also the original web app [BLambdaR](https://lambdar.rses.anu.edu.au/blambdar/).
 
 ## Using the app
 
@@ -23,6 +27,8 @@ Options that have no effect in λ space are greyed out and annotated while λ sp
 
 The **Spectra** tab plots the REE patterns of your data (normalised to the chosen reference, optionally to one element; element or ionic-radius axis after Shannon, 1976; Y optional), with the same samples and group colours as the cross-plot.
 
+The **Data quality** tab shows the distribution of the roughness values (density curves) of your data, one curve per group, against the reference data (foraminifera, pore water, seawater compilations, GEOTRACES shallow and deep), with the roughness limit as a vertical line and a table of medians, 90th percentiles and the share of samples above the limit. In λ space it shows the λ roughness.
+
 Downloads: figure (PDF; PNG where supported), results table (CSV), arrays and fields in the current configuration (CSV), spectra (PDF) and the normalised REE (CSV). The results table lists every row of the upload in the original order; the column `row` is the row number in your file (header not counted) and identifies a sample uniquely. The calculation settings are written into the table. Click a point to see its values.
 
 ## Methods in brief
@@ -34,7 +40,7 @@ Downloads: figure (PDF; PNG where supported), results table (CSV), arrays and fi
 | Anomalies (table only) | geometric, after Barrat and Bayon (2024): Ce/Ce\* = Ce·Nd / Pr² (arithmetic 2 Ce / (La + Pr) and Ce / sqrt(La Pr) selectable), La/La\* = La·Nd² / Pr³, Eu/Eu\* = Eu / sqrt(Sm·Gd) |
 | Gd/Gd\* | Gd / Gd\*, with Gd\* = 0.33 Sm + 0.67 Tb (Bau and Dulski, 1996) by default; alternatives Sm^(1/3) Tb^(2/3), Sm²/Nd, Tb²/Dy (Barrat and Bayon, 2024) or BLambdaR |
 | Anthropogenic Gd | Gd · max(0, 1 − baseline / (Gd/Gd\*)), in the input units |
-| REE roughness | square root of the summed squared deviations of Nd, Tb, Dy, Ho, Er, Tm and Yb from the mean of their neighbours (unpublished screening measure; needs all 11 elements measured) |
+| REE roughness | square root of the summed squared deviations of Nd, Tb, Dy, Ho, Er, Tm and Yb from the mean of their neighbours; a measure of the visible jaggedness of poor-quality patterns (contamination, counting statistics, interferences); unpublished screening measure, needs all 11 elements measured |
 | λ space | −λ1 and −λ2 from a base-R port of BLambdaR (Anenburg and Williams, 2022; O'Neill, 2016 radii); computed only when ticked |
 
 **Units.** Mass data are normalised to mass-based standards, molar data (pmol/kg) to the standard divided by atomic mass. Mixing the two biases HREE/LREE by about 18%.
@@ -78,43 +84,22 @@ shiny::runApp("app")
 
 5. Commit and push the website; Jekyll rebuilds within a minute or two. Later changes to the app only need a push to the app repository.
 
-## R functions
-
-`functions/REE_functions.R` contains the calculations of the app as stand-alone R functions with the same options and defaults, for scripted and reproducible work outside the app:
-
-- `REE_ratios()`: HREE/LREE, MREE/MREE\*, Ce/Ce\*, La/La\*, Eu/Eu\*, Gd/Gd\*, anthropogenic Gd, REE roughness and the screening flags;
-- `REE_lambda()`: λ0–λ4 and τ1–τ4 (BLambdaR port) with λ roughness;
-- `REE_spectrum()`: normalised REE patterns as a table and a ggplot2 figure.
-
-```r
-source("functions/REE_functions.R")
-res <- REE_ratios(mydata, basis = "molar", norm = "EUS_Bau2018", rough_max = 0.3)
-lam <- REE_lambda(mydata, basis = "molar")
-sp  <- REE_spectrum(mydata, basis = "molar", colour = "depth", keep = res$screen == "ok")
-```
-
-Only base R is needed (ggplot2 for `REE_spectrum()`). See `functions/examples.R` for more examples, including the cross-plot and the roughness distribution. `functions/test_functions.R` checks that the functions reproduce the app's results for 400 random option combinations on three data sets, the λ parameters and the spectra.
-
 ## Rebuilding the reference data
 
 `Rscript data-raw/build_data.R` rebuilds `app/data/` from the compilation files and the GEOTRACES subset in `data-raw/` (GEOTRACES: quality flag "no problem reported", La and depth present; 118 rows duplicating compilation seawater removed).
 
 ## Limitations
 
-- The fields are recomputed on each change and feel somewhat slower in the browser (WebAssembly) than in a local R session.
+- The Shinylive build has not been tested in a browser (only R code, server logic and the native Shiny app were tested); run the workflow once and check the page. The fields are recomputed on each change and may feel slower in WebAssembly.
 - PNG download may be unavailable in webR; PDF is the safe option.
-- The lambda space, λ roughness (default limit 0.03 is provisional), REE roughness and the BLambdaR Gd option are experimental.
+- The lambda space, λ roughness (default limit 0.03), REE roughness and the BLambdaR Gd option are experimental.
 - Upload size follows the Shiny default (5 MB); select the REE columns before uploading large files.
 - Y of the shale standards (spectra tab only) is taken from the author's REE_spectrum() function and not independently verified; molar data are taken as pmol/kg on the spectra tab.
 - The plot is a diagnostic, not a source apportionment.
 
-## Licence and data
+## Licence
 
-Code: MIT, see `LICENSE`. The GEOTRACES IDP2025 subset in `data-raw/` and `app/data/` is redistributed under the Creative Commons Attribution 4.0 licence of the IDP2025 ([Fair Use Agreement](https://www.geotraces.org/idp-fair-use-document/)); please cite it as given in the references. The other reference data are compiled from the publications listed below.
-
-## Citation
-
-If you use the app or the functions, please cite Blaser et al. (2020) and, where relevant, the method and data references below.
+MIT, see `LICENSE`.
 
 ## References
 
@@ -130,7 +115,7 @@ If you use the app or the functions, please cite Blaser et al. (2020) and, where
 - Du, J., Haley, B.A., Mix, A.C., 2016. Neodymium isotopes in authigenic phases, bottom waters and detrital sediments in the Gulf of Alaska and their implications for paleo-circulation reconstruction. Geochim. Cosmochim. Acta 193, 14–35. https://doi.org/10.1016/j.gca.2016.08.005
 - Filippova, A., Frank, M., Kienast, M., Rickli, J., Hathorne, E., Yashayaev, I.M., Pahnke, K., 2017. Water mass circulation and weathering inputs in the Labrador Sea based on coupled Hf–Nd isotope compositions and rare earth element distributions. Geochim. Cosmochim. Acta 199, 164–184. https://doi.org/10.1016/j.gca.2016.11.024
 - Gale, A., Dalton, C.A., Langmuir, C.H., Su, Y., Schilling, J.-G., 2013. The mean composition of ocean ridge basalts. Geochem. Geophys. Geosyst. 14, 489–518. https://doi.org/10.1029/2012GC004334
-- GEOTRACES Intermediate Data Product Group, 2025. The GEOTRACES Intermediate Data Product 2025 (IDP2025). NERC EDS British Oceanographic Data Centre NOC. https://doi.org/10.5285/42c92148-8d03-8be6-e063-7086abc09f0c
+- GEOTRACES Intermediate Data Product Group, 2025. The GEOTRACES Intermediate Data Product 2025 (IDP2025). https://doi.org/10.5285/42C92148-8D03-8BE6-E063-7086ABC09F0C
 - Hathorne, E.C., Stichel, T., Brück, B., Frank, M., 2015. Rare earth element distribution in the Atlantic sector of the Southern Ocean: The balance between particle scavenging and vertical supply. Mar. Chem. 177, 157–171. https://doi.org/10.1016/j.marchem.2015.03.011
 - Kulaksız, S., Bau, M., 2007. Contrasting behaviour of anthropogenic gadolinium and natural rare earth elements in estuaries and the gadolinium input into the North Sea. Earth Planet. Sci. Lett. 260, 361–371. https://doi.org/10.1016/j.epsl.2007.06.016
 - Martin, E.E., Blair, S.W., Kamenov, G.D., Scher, H.D., Bourbon, E., Basak, C., Newkirk, D.N., 2010. Extraction of Nd isotopes from bulk deep sea sediments for paleoceanographic studies on Cenozoic time scales. Chem. Geol. 269, 414–431. https://doi.org/10.1016/j.chemgeo.2009.10.016
