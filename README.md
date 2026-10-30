@@ -1,12 +1,16 @@
 # REE cross-plot: MREE/MREE\* vs HREE/LREE
 
-An interactive R Shiny tool that places your rare earth element (REE) data on the MREE/MREE\* vs HREE/LREE cross-plot (idea after Du et al., 2016; Blaser et al., 2020, Fig. 3), together with
+An interactive R Shiny tool that places your rare earth element (REE) data on the MREE/MREE\* vs HREE/LREE cross-plot (Martin et al., 2010; arrays added by Du et al., 2016; reference fields added by Blaser et al., 2020, Fig. 3), together with
 
 - the marine **authigenic array** (seawater to Fe-Mn nodule mixing),
 - the **detrital array** (MORB, Greenland Archaean crust and Canadian Precambrian shield mixing),
 - kernel-density **fields** of published foraminifera, pore water and seawater data (including GEOTRACES IDP2025 seawater, split at 200 m).
 
 The app runs entirely in the browser (Shinylive / WebAssembly), so uploaded data never leave your computer.
+
+## How to cite
+
+The MREE/MREE\* vs HREE/LREE diagram was introduced by Martin et al. (2010); Du et al. (2016) added the authigenic and detrital arrays, and Blaser et al. (2020) the reference fields of foraminifera, pore water and seawater. **Whoever uses this tool or its figures should cite Blaser et al. (2020)**; citing Martin et al. (2010) and Du et al. (2016) as well is optional but appreciated. The lambda option follows O'Neill (2016) and Anenburg and Williams (2022); see also the original web app [BLambdaR](https://lambdar.rses.anu.edu.au/blambdar/).
 
 ## Using the app
 
@@ -23,6 +27,8 @@ Options that have no effect in λ space are greyed out and annotated while λ sp
 
 The **Spectra** tab plots the REE patterns of your data (normalised to the chosen reference, optionally to one element; element or ionic-radius axis after Shannon, 1976; Y optional), with the same samples and group colours as the cross-plot.
 
+The **Data quality** tab shows the distribution of the roughness values (density curves) of your data, one curve per group, against the reference data (foraminifera, pore water, seawater compilations, GEOTRACES shallow and deep), with the roughness limit as a vertical line and a table of medians, 90th percentiles and the share of samples above the limit. In λ space it shows the λ roughness.
+
 Downloads: figure (PDF; PNG where supported), results table (CSV), arrays and fields in the current configuration (CSV), spectra (PDF) and the normalised REE (CSV). The results table lists every row of the upload in the original order; the column `row` is the row number in your file (header not counted) and identifies a sample uniquely. The calculation settings are written into the table. Click a point to see its values.
 
 ## Methods in brief
@@ -34,7 +40,7 @@ Downloads: figure (PDF; PNG where supported), results table (CSV), arrays and fi
 | Anomalies (table only) | geometric, after Barrat and Bayon (2024): Ce/Ce\* = Ce·Nd / Pr² (arithmetic 2 Ce / (La + Pr) and Ce / sqrt(La Pr) selectable), La/La\* = La·Nd² / Pr³, Eu/Eu\* = Eu / sqrt(Sm·Gd) |
 | Gd/Gd\* | Gd / Gd\*, with Gd\* = 0.33 Sm + 0.67 Tb (Bau and Dulski, 1996) by default; alternatives Sm^(1/3) Tb^(2/3), Sm²/Nd, Tb²/Dy (Barrat and Bayon, 2024) or BLambdaR |
 | Anthropogenic Gd | Gd · max(0, 1 − baseline / (Gd/Gd\*)), in the input units |
-| REE roughness | square root of the summed squared deviations of Nd, Tb, Dy, Ho, Er, Tm and Yb from the mean of their neighbours (unpublished screening measure; needs all 11 elements measured) |
+| REE roughness | square root of the summed squared deviations of Nd, Tb, Dy, Ho, Er, Tm and Yb from the mean of their neighbours; a measure of the visible jaggedness of poor-quality patterns (contamination, counting statistics, interferences); unpublished screening measure, needs all 11 elements measured |
 | λ space | −λ1 and −λ2 from a base-R port of BLambdaR (Anenburg and Williams, 2022; O'Neill, 2016 radii); computed only when ticked |
 
 **Units.** Mass data are normalised to mass-based standards, molar data (pmol/kg) to the standard divided by atomic mass. Mixing the two biases HREE/LREE by about 18%.
@@ -86,7 +92,7 @@ shiny::runApp("app")
 
 - The Shinylive build has not been tested in a browser (only R code, server logic and the native Shiny app were tested); run the workflow once and check the page. The fields are recomputed on each change and may feel slower in WebAssembly.
 - PNG download may be unavailable in webR; PDF is the safe option.
-- The lambda space, λ roughness (default limit 0.03 is provisional), REE roughness and the BLambdaR Gd option are experimental.
+- The lambda space, λ roughness (default limit 0.03), REE roughness and the BLambdaR Gd option are experimental.
 - Upload size follows the Shiny default (5 MB); select the REE columns before uploading large files.
 - Y of the shale standards (spectra tab only) is taken from the author's REE_spectrum() function and not independently verified; molar data are taken as pmol/kg on the spectra tab.
 - The plot is a diagnostic, not a source apportionment.

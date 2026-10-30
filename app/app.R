@@ -43,11 +43,16 @@ ui <- fluidPage(
     body.lam .lam-note { display: block; }
     body.lam .lam-off { opacity: 0.45; }
     .spec-opts .form-group { margin-bottom: 6px; }
+    .cite-note { background: #f1f4f7; border-left: 4px solid #2166AC; padding: 6px 10px; margin: 0 0 12px 0; font-size: 12.5px; }
   ")),
   # grey out (and annotate) the options that have no effect while lambda space is selected
   tags$script(HTML("$(document).on('shiny:inputchanged', function(e) {
     if (e.name === 'lambda_space') { $('body').toggleClass('lam', !!e.value); } });"))),
   titlePanel("REE cross-plot: MREE/MREE* vs HREE/LREE"),
+  div(class = "cite-note",
+      HTML("<b>Please cite Blaser et al. (2020)</b> when you use this tool or figures made with it (full reference under \"About &amp; references\"). ",
+           "The MREE/MREE* vs HREE/LREE diagram goes back to Martin et al. (2010), Du et al. (2016) added the authigenic and detrital arrays, ",
+           "and Blaser et al. (2020) the reference fields of foraminifera, pore water and seawater. Citing the earlier two papers is optional but appreciated.")),
   sidebarLayout(
     sidebarPanel(
       width = 4,
@@ -94,7 +99,7 @@ ui <- fluidPage(
         selectInput("fill_var", "Symbol fill", choices = c("Group (categorical)" = "group")),
         checkboxInput("rough_on", "Exclude samples rougher than …", FALSE),
         sliderInput("rough_max", "REE roughness limit", min = 0, max = 1.5, value = 0.3, step = 0.01),
-        div(class = "small-note", "Applies to your data only. Samples without a roughness value (elements missing) are kept."),
+        div(class = "small-note", "Roughness = visible jaggedness of the REE pattern, a sign of poor data quality (see the Data quality tab). Applies to your data only. Samples without a roughness value (elements missing) are kept."),
         sliderInput("min_ree", "Minimum number of measured REE (of 14)", min = 0, max = 14, value = 0, step = 1),
         selectizeInput("req_ree", "Elements that must be measured", choices = REE, multiple = TRUE,
                        options = list(placeholder = "optional")),
@@ -102,6 +107,8 @@ ui <- fluidPage(
         uiOutput("groups_ui")),
       section("4 · Plot",
         checkboxInput("lambda_space", "Lambda space (experimental): −λ1 vs −λ2 instead of the ratios", FALSE),
+        div(class = "small-note", "λ values after O'Neill (2016), fitted as in Anenburg & Williams (2022). Related web app for exploring and calculating λ values: ",
+            tags$a(href = "https://lambdar.rses.anu.edu.au/blambdar/", target = "_blank", rel = "noopener", "BLambdaR"), "."),
         conditionalPanel("!input.lambda_space", checkboxInput("log_axes", "log10 axes (both)", FALSE)),
         checkboxInput("show_legend", "Show legend", TRUE),
         radioButtons("window", "Plot window",
@@ -158,6 +165,19 @@ ui <- fluidPage(
           div(class = "dl-row",
             downloadButton("dl_spec_pdf", "Spectra (PDF)"),
             downloadButton("dl_spec_csv", "Normalised REE (CSV)"))),
+        tabPanel("Data quality",
+          br(),
+          uiOutput("rough_msg"),
+          fluidRow(
+            column(4, checkboxInput("rough_log", "Logarithmic axis", TRUE)),
+            column(4, checkboxInput("rough_ref", "Show reference data", TRUE)),
+            column(4, checkboxInput("rough_legend", "Show legend", TRUE))),
+          plotOutput("rough_plot", height = "420px"),
+          div(class = "small-note", HTML("Distribution of the roughness of your data (filled, one curve per group; ticks mark the individual samples) compared with the reference data (dashed). ",
+              "The dotted line is the limit set under <i>3 · Screening &amp; symbols</i>. Roughness grows with measurement noise, contamination and interferences, but also with falling concentrations: ",
+              "seawater is naturally rougher than foraminifera, so compare your data with the reference curve of the same kind of sample. Each curve has unit area; curves need at least 5 different values (smaller groups appear as ticks only).")),
+          tableOutput("rough_table"),
+          div(class = "dl-row", downloadButton("dl_rough_pdf", "Roughness plot (PDF)"))),
         tabPanel("Computed values", br(), tableOutput("table")),
         tabPanel("About & references", br(), about_ui())
       )
@@ -470,6 +490,46 @@ server <- function(input, output, session) {
     out$field_bandwidth_multiplier <- ifelse(out$layer == "density_field", input$adjust, NA)
     out
   })
+
+  # ---- data quality tab --------------------------------------------------------------------------
+  rough_label <- reactive(if (lambda_on()) "Lambda roughness" else "REE roughness")
+  rough_ref <- reactive({
+    if (!isTRUE(input$rough_ref)) return(NULL)
+    ru <- ref_used(); rc <- rough_col()
+    if (!rc %in% names(ru) || nrow(ru) == 0) return(NULL)
+    d <- data.frame(class = ref_class(ru), v = ru[[rc]])
+    d[is.finite(d$v), , drop = FALSE]
+  })
+  rough_user <- reactive({
+    u <- user_all(); rc <- rough_col()
+    if (is.null(u) || !rc %in% names(u)) return(NULL)
+    ok <- u$group %in% groups_shown() & is.finite(u[[rc]])
+    if (!any(ok)) return(NULL)
+    data.frame(group = u$group[ok], v = u[[rc]][ok], stringsAsFactors = FALSE)
+  })
+  rough_fig <- reactive({
+    plot_roughness(rough_ref(), rough_user(),
+                   list(log = isTRUE(input$rough_log), limit = input$rough_max %||% NA_real_, limit_on = isTRUE(input$rough_on),
+                        label = rough_label(), group_levels = all_groups(), legend = isTRUE(input$rough_legend)))
+  })
+  output$rough_plot <- renderPlot({
+    validate(need(!is.null(rough_ref()) || !is.null(rough_user()), "Load REE concentrations (or tick the reference data) to see the roughness distribution."))
+    suppressWarnings(rough_fig())
+  }, res = 110)
+  output$rough_table <- renderTable(roughness_summary(rough_ref(), rough_user(), input$rough_max %||% NA_real_), digits = 3, na = "")
+  output$rough_msg <- renderUI({
+    if (identical(input$mode, "ratios") && (isTRUE(input$use_example) || !is.null(input$file)))
+      return(div(class = "status-warn", "Pre-computed ratios carry no roughness: only the reference data are shown."))
+    u <- user_all()
+    if (is.null(u) || isTRUE(identical(input$mode, "ratios"))) return(NULL)
+    rc <- rough_col()
+    if (!rc %in% names(u) || !any(is.finite(u[[rc]])))
+      return(div(class = "status-warn", "No roughness could be calculated for your data (all of Pr, Nd, Sm, Gd, Tb, Dy, Ho, Er, Tm, Yb, Lu must be measured; in λ space at least 10 usable elements)."))
+    n0 <- sum(!is.finite(u[[rc]]))
+    if (n0) div(class = "status-warn", sprintf("%d sample(s) without roughness value (elements missing) are not shown.", n0))
+  })
+  output$dl_rough_pdf <- downloadHandler("ree_roughness.pdf", function(file)
+    suppressWarnings(ggplot2::ggsave(file, rough_fig(), width = 9, height = 5.5, device = grDevices::pdf)))
 
   # ---- spectra tab -----------------------------------------------------------------------------
   spec_ref_short <- reactive(sub(" - .*$", "", norm_label(cfg())))

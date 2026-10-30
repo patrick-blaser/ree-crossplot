@@ -45,6 +45,10 @@ REF_LABELS <- c(
 
 about_ui <- function() {
   shiny::tagList(
+    shiny::h4("How to cite"),
+    shiny::p("The MREE/MREE* vs HREE/LREE diagram was introduced by Martin et al. (2010); Du et al. (2016) added the authigenic and detrital arrays, and Blaser et al. (2020) the reference fields of foraminifera, ",
+             "pore water and seawater. ", shiny::strong("Whoever uses this tool or its figures should cite Blaser et al. (2020)"),
+             "; citing Martin et al. (2010) and Du et al. (2016) as well is optional but appreciated. Please also cite the sources of the reference data (see References) where they matter for your argument."),
     shiny::h4("What the plot shows"),
     shiny::p("Shale-normalised REE patterns are reduced to two numbers: the REE slope ",
              shiny::strong("HREE/LREE = (Tm+Yb+Lu)/(La+Pr+Nd)"), " and the mid-REE bulge ",
@@ -84,14 +88,19 @@ about_ui <- function() {
         "Anthropogenic Gd = Gd (1 − baseline/anomaly), in the units of the input. Natural samples are not exactly at 1 (typically 1.1–1.2 with Bau and Dulski), ",
         "so a baseline can be divided out. 'Ignore Gd' replaces the measured Gd by baseline × Gd* before the ratios are calculated."),
       shiny::tags$li(shiny::strong("REE roughness: "), "scatter of the Nd-Lu pattern around its smooth neighbours (unpublished screening measure; needs Pr, Nd, Sm, Gd-Lu measured). ",
-        "High values point to concentrations near the detection limit or oxide interferences. Samples above the chosen value can be left out; the filter only applies to your data."),
+        "It is called roughness because it quantifies how jagged a pattern looks: natural shale-normalised patterns are smooth, so visible roughness is a sign of relatively poor data quality. ",
+        "Typical causes are a larger imprint of (instrumental) contamination, poor counting statistics at low concentrations and a larger contribution from interferences. ",
+        "Samples above the chosen value can be left out; the filter only applies to your data. The Data quality tab shows the distribution of the roughness of your groups against the reference data, ",
+        "so you can judge whether your values are unusual for the type of sample (seawater is naturally rougher than foraminifera because of its low concentrations)."),
       shiny::tags$li(shiny::strong("Screening by gaps: "), "samples can be left out when fewer than a chosen number of the 14 REE were measured, or when chosen elements are missing ",
         "(measured values only; interpolated gaps do not count). In lambda space a pattern needs at least 10 usable elements (Ce and Eu are not used), otherwise it gets no lambda values."),
       shiny::tags$li(shiny::strong("Plot window: "), "by default the window holds the arrays, the field outlines and your data; with 200 or more samples the extreme 0.5% at either end are left off-scale ",
         "(the status line counts samples outside the window)."),
-      shiny::tags$li(shiny::strong("Lambda space (experimental): "), "the pattern is fitted by orthogonal polynomials of the ionic radius (O'Neill, 2016; Anenburg and Williams, 2022). ",
+      shiny::tags$li(shiny::strong("Lambda space (experimental): "), "the pattern is fitted by orthogonal polynomials of the ionic radius (O'Neill, 2016; fitting procedure and tetrad terms as in Anenburg and Williams, 2022; this is a base-R port of their BLambdaR calculation). ",
         "−λ1 (slope) and −λ2 (curvature) replace HREE/LREE and MREE/MREE*. Reference data and arrays were fitted with Ce and Eu excluded and all tetrad terms; ",
-        "the lambda roughness replaces the REE roughness in this mode.")
+        "the lambda roughness replaces the REE roughness in this mode. The original web app BLambdaR (",
+        shiny::tags$a(href = "https://lambdar.rses.anu.edu.au/blambdar/", target = "_blank", rel = "noopener", "lambdar.rses.anu.edu.au/blambdar"),
+        ") offers the complete fit, including the tetrad and anomaly analysis, and can be used to explore and calculate lambda values.")
     ),
     shiny::h4("Spectra"),
     shiny::p("The Spectra tab shows the REE patterns of your data, normalised to the chosen reference (optionally divided by one element, which removes absolute concentration differences), ",

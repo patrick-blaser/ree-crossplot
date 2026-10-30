@@ -275,4 +275,16 @@ check("Gd/Gd*: geometric methods (Sm-Tb, Nd-Sm, Tb-Dy) return the imposed factor
 check("Gd/Gd* with the arithmetic Bau-Dulski estimate is close to, but not exactly, 3 on the same pattern",
       {v <- ree_ratios(conc_of(gx), "mass", default_cfg(gd_method = "BD1996"))$Gd_Gdstar; abs(v - 3) < 0.02 && abs(v - 3) > 1e-9})
 
+rr <- reference_ratios(load_reference("data/reference_data.csv"), default_cfg())
+check("reference data carry REE and lambda roughness", sum(is.finite(rr$REE_rough)) > 3000 && sum(is.finite(rr$lambda_rough)) > 3000)
+check("lambda roughness of the reference data matches a fresh fit (first 50 rows)",
+      near(blambda(rr[1:50, REE], rr$basis[1:50])$lambda_rough, rr$lambda_rough[1:50], 1e-5))
+set.seed(1)
+dd <- data.frame(class = factor(rep(REF_CLASS_LEVELS[1:2], each = 40), levels = REF_CLASS_LEVELS), v = rlnorm(80, -1, 0.5))
+du <- data.frame(group = rep(c("a", "b", "c"), c(30, 30, 2)), v = rlnorm(62, -0.5, 0.6))
+check("plot_roughness builds with log and linear axes, and with tiny groups (rug only)",
+      all(vapply(c(TRUE, FALSE), function(lg) inherits(ggplot_build(plot_roughness(dd, du, list(log = lg, limit = 0.3))), "ggplot_built"), logical(1))))
+check("roughness_summary share above limit is correct", {
+  sm <- roughness_summary(NULL, data.frame(group = "a", v = c(0.1, 0.2, 0.4, 0.5)), 0.3); sm[["Above limit (%)"]] == 50 && sm$n == 4 })
+
 cat("\nAll", n_pass, "checks passed.\n")

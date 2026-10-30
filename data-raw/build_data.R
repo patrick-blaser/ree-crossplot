@@ -49,6 +49,7 @@ ref <- rbind(ref, gtr)
 bl <- blambda(ref[, REE], ref$basis)
 ref$lx <- round(-bl$lambda1, 5)
 ref$ly <- round(-bl$lambda2, 5)
+ref$lambda_rough <- round(bl$lambda_rough, 6)      # screening measure of the lambda fit (Data quality tab)
 write.csv(ref, "app/data/reference_data.csv", row.names = FALSE, na = "")
 
 # ---- end-members -----------------------------------------------------------

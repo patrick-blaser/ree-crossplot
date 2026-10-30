@@ -16,7 +16,8 @@ base_inputs <- function(...) {
     ref_sel = names(REF_LABELS), lambda_space = FALSE, log_axes = FALSE, window = "auto",
     coverage = 0.95, adjust = 1, pt_size = 3.2, user_fields = FALSE, ce_form = "geoPrNd", show_legend = TRUE, min_ree = 0, req_ree = NULL,
     id_extra = NULL, spec_x = "element", spec_norm2 = "(none)", spec_color = "group", spec_y = TRUE, spec_log = TRUE,
-    spec_connect = TRUE, spec_points = TRUE, spec_legend = TRUE, spec_lw = 0.5), list(...))
+    spec_connect = TRUE, spec_points = TRUE, spec_legend = TRUE, spec_lw = 0.5,
+    rough_log = TRUE, rough_ref = TRUE, rough_legend = TRUE), list(...))
 }
 set_all <- function(session, ...) do.call(session$setInputs, base_inputs(...))
 
@@ -172,5 +173,21 @@ testServer(app_path, {
   set_all(session, file = data.frame(name = "bad.csv", datapath = bad, size = 1, type = "text/csv"))
   check("broken upload: informative message and the reference figure still renders",
         is.null(user_data()) && grepl("Missing REE column", html(output$status)) && inherits(fig(), "ggplot"))
+})
+
+# 6. data quality tab
+testServer(app_path, {
+  set_all(session, use_example = TRUE, id_col = "sample", group_col = "group", rough_on = TRUE, rough_max = 0.3)
+  ru <- rough_ref(); ur <- rough_user()
+  check("roughness reference table has the five classes with finite values", nlevels(droplevels(ru$class)) >= 3 && all(is.finite(ru$v)))
+  check("roughness of the user's data: one row per sample with a value, groups kept", nrow(ur) > 0 && all(ur$group %in% user_data()$group))
+  check("roughness figure is a ggplot and builds", inherits(rough_fig(), "ggplot") && !inherits(try(ggplot_build(rough_fig()), silent = TRUE), "try-error"))
+  tb <- roughness_summary(ru, ur, 0.3)
+  check("summary table lists user groups and reference classes, shares between 0 and 100",
+        all(c("your data", "reference") %in% tb$Type) && all(tb[["Above limit (%)"]] >= 0 & tb[["Above limit (%)"]] <= 100, na.rm = TRUE))
+  session$setInputs(lambda_space = TRUE)
+  check("in lambda space the lambda roughness is used for both data and reference",
+        identical(rough_col(), "lambda_rough") && nrow(rough_ref()) > 3000 && max(rough_ref()$v) < 0.1)
+  check("lambda roughness figure builds", inherits(rough_fig(), "ggplot"))
 })
 cat("\nAll", cnt, "app checks passed.\n")

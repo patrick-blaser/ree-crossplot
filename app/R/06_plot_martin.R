@@ -23,6 +23,7 @@ reference_ratios <- function(ref, cfg = default_cfg()) {
   ref$x <- r$HREE_LREE
   ref$y <- r$MREE_MREEstar
   ref$n_estimated <- r$n_estimated
+  ref$REE_rough <- r$REE_rough
   ref
 }
 
