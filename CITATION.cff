@@ -1,0 +1,92 @@
+cff-version: 1.2.0
+message: "If you use this software or its figures, please cite the article given under preferred-citation."
+title: "REE cross-plot: interactive tool and R functions for harmonizing, screening and plotting rare earth element data"
+type: software
+authors:
+  - family-names: Blaser
+    given-names: Patrick
+    orcid: "https://orcid.org/0000-0001-8102-9777"
+    affiliation: "GEOMAR Helmholtz Centre for Ocean Research Kiel; University of Lausanne"
+repository-code: "https://github.com/patrick-blaser/ree-crossplot"
+url: "https://patrick-blaser.github.io/ree-crossplot/"
+license: MIT
+version: "1.0.1"
+date-released: "2026-10-30"
+keywords:
+  - rare earth elements
+  - REE patterns
+  - geochemistry
+  - paleoceanography
+  - seawater
+  - data harmonization
+  - R
+  - Shiny
+preferred-citation:
+  type: article
+  authors:
+    - family-names: Blaser
+      given-names: Patrick
+      orcid: "https://orcid.org/0000-0001-8102-9777"
+    - family-names: Gutjahr
+      given-names: Marcus
+    - family-names: Pöppelmeier
+      given-names: Frerk
+    - family-names: Frank
+      given-names: Martin
+    - family-names: Kaboth-Bahr
+      given-names: Stefanie
+    - family-names: Lippold
+      given-names: Jörg
+  title: "Labrador Sea bottom water provenance and REE exchange during the past 35,000 years"
+  journal: "Earth and Planetary Science Letters"
+  volume: 542
+  start: 116299
+  year: 2020
+  doi: "10.1016/j.epsl.2020.116299"
+references:
+  - type: article
+    authors:
+      - family-names: Martin
+        given-names: Ellen E.
+      - family-names: Blair
+        given-names: Stephen W.
+      - family-names: Kamenov
+        given-names: George D.
+      - family-names: Scher
+        given-names: Howie D.
+      - family-names: Bourbon
+        given-names: Elisa
+      - family-names: Basak
+        given-names: Chandranath
+      - family-names: Newkirk
+        given-names: David N.
+    title: "Extraction of Nd isotopes from bulk deep sea sediments for paleoceanographic studies on Cenozoic time scales"
+    journal: "Chemical Geology"
+    volume: 269
+    start: 414
+    end: 431
+    year: 2010
+    doi: "10.1016/j.chemgeo.2009.10.016"
+  - type: article
+    authors:
+      - family-names: Du
+        given-names: Jianghui
+      - family-names: Haley
+        given-names: Brian A.
+      - family-names: Mix
+        given-names: Alan C.
+    title: "Neodymium isotopes in authigenic phases, bottom waters and detrital sediments in the Gulf of Alaska and their implications for paleo-circulation reconstruction"
+    journal: "Geochimica et Cosmochimica Acta"
+    volume: 193
+    start: 14
+    end: 35
+    year: 2016
+    doi: "10.1016/j.gca.2016.08.005"
+  - type: data
+    authors:
+      - name: "GEOTRACES Intermediate Data Product Group"
+    title: "The GEOTRACES Intermediate Data Product 2025 (IDP2025)"
+    publisher:
+      name: "NERC EDS British Oceanographic Data Centre NOC"
+    year: 2025
+    doi: "10.5285/42c92148-8d03-8be6-e063-7086abc09f0c"
