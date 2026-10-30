@@ -190,6 +190,24 @@ ur <- prepare_user_data(read_user_file(rt), "ratios", xcol = "HREE/LREE", ycol =
 check("pre-computed ratio upload", near(ur$data$x, c(1.5, 3)) && near(ur$data$y, c(1.2, 0.9)))
 gr <- guess_ratio_columns(c("id", "HREE/LREE", "MREE/MREE*"))
 check("ratio columns are guessed", gr$x == "HREE/LREE" && gr$y == "MREE/MREE*")
+# PANGAEA .tab (Paul, 2025, https://doi.org/10.1594/PANGAEA.982625, CC-BY 4.0)
+pg <- read_user_file("../tests/data/MSM96_So268_REE.tab", "MSM96_So268_REE.tab")
+check("PANGAEA .tab: metadata header skipped, 26 rows and 23 columns read",
+      nrow(pg) == 26 && ncol(pg) == 23 && names(pg)[1] == "Event" && is.numeric(pg[["La [mg/kg]"]]))
+check("PANGAEA .tab: dataset citation and DOI kept (not the bundle)",
+      attr(pg, "source")$doi == "10.1594/PANGAEA.982625" && !grepl("In:", attr(pg, "source")$citation))
+pcols <- detect_ree_columns(names(pg))
+check("PANGAEA .tab: 'La [mg/kg]' style columns and Y recognised", length(pcols) == 14 && detect_y_column(names(pg)) == "Y [mg/kg]")
+check("units in the column names give the mass basis", identical(guess_basis_from_units(pcols)$basis, "mass"))
+check("molar and mixed units are recognised",
+      identical(guess_basis_from_units(c(La = "La [pmol/kg]", Ce = "Ce_pmol/kg"))$basis, "molar") &&
+      identical(guess_basis_from_units(c(La = "La [pmol/kg]", Ce = "Ce [ppm]"))$basis, "mixed"))
+up <- prepare_user_data(pg, "concentrations", "mass", default_cfg(), id_col = "Sample label")
+check("PANGAEA data are plotted; empty Tm cells are missing values, not errors",
+      sum(is.finite(up$data$x)) == 26 && sum(up$data$n_REE_measured < 14) == 7)
+check("ratio columns such as Ce/Ce* or La/Yb are not taken for the element",
+      identical(unname(detect_ree_columns(c("Ce/Ce*", "La/Yb", "Eu / Eu*", "Ce [ppm]"))), "Ce [ppm]"))
+
 nf <- tempfile(fileext = ".csv"); write.csv(as.data.frame(t(NORMALISERS$EUS_Bau2018)), nf, row.names = FALSE)
 check("own reference file is read (one row, 14 REE)", near(read_norm_file(nf), NORMALISERS$EUS_Bau2018))
 nf2 <- tempfile(fileext = ".csv"); write.csv(rbind(NORMALISERS$EUS_Bau2018, NORMALISERS$EUS_Bau2018), nf2, row.names = FALSE)

@@ -32,3 +32,10 @@ head(sp$normalised)
 # 5. Distribution of the REE roughness by group (as in the app's roughness tab)
 ggplot(res, aes(REE_rough, colour = group)) + geom_density(na.rm = TRUE) +
   geom_vline(xintercept = 0.3, linetype = 2) + labs(x = "REE roughness") + theme_classic()
+
+# 6. A PANGAEA dataset (metadata header skipped, units read from the column names, citation kept)
+pg <- REE_read("tests/data/MSM96_So268_REE.tab")
+attr(pg, "source")$citation
+pg$fraction <- sub("^.* cm (pooled )?", "", pg[["Sample label"]])   # leach fraction from the sample label
+res_pg <- REE_ratios(pg)                                             # mass basis from "[mg/kg]"
+REE_spectrum(pg, colour = "fraction", id = "Sample label")

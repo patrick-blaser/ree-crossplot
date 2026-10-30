@@ -16,7 +16,7 @@ The MREE/MREE\* vs HREE/LREE diagram was introduced by Martin et al. (2010); Du 
 
 The sidebar has six collapsible sections.
 
-1. **Your data**: upload a CSV/TSV (or tick *Use example data*; uploading a file unticks it), choose concentrations or ratios, the unit basis (mass or molar), ID and group columns, and further columns to carry into the results. The columns recognised as REE (and Y) are listed under the status message.
+1. **Your data**: upload a CSV/TSV or a PANGAEA `.tab` file (or tick *Use example data*; uploading a file unticks it), choose concentrations or ratios, the unit basis (mass or molar), ID and group columns, and further columns to carry into the results. The columns recognised as REE (and Y) are listed under the status message. For PANGAEA files the metadata header is skipped, the dataset citation and DOI are shown and written into the results table, and the unit basis is set from the units in the column names (e.g. `La [mg/kg]`); columns such as `Ce/Ce*` or `La/Yb` are not mistaken for the elements.
 2. **Normalisation & ratios**: normalising reference (PAAS Pourmand et al. 2012 by default; PAAS McLennan 1989, NASC, EUS Bau et al. 2018, CI chondrites after Pourmand 2012 or O'Neill 2016, or your own one-row reference file), LREE definition (La-Pr-Nd or Pr-Nd-Sm) gap method (interpolate, group mean, none) and the Ce/Ce\* definition.
 3. **Screening & symbols**: symbol fill by group, a numeric column (e.g. age, depth), REE roughness or Gd/Gd\*; an optional roughness limit; a minimum number of measured REE and required elements; group visibility (tick a single group to show only that one, or untick groups to exclude them). Screening applies to your data only.
 4. **Plot**: λ space (experimental), log10 axes (both axes together), legend on/off, plot window, field coverage and smoothness, point size and optional density fields for your own groups.
@@ -53,7 +53,7 @@ To reproduce Fig. 3 of Blaser et al. (2020), choose PAAS McLennan (1989) and unt
 
 ## Verification
 
-`tests/run_tests.R` (91 checks) covers the core calculations, lambda module, arrays, fields and parsing; `tests/test_app.R` (41 checks) exercises the Shiny server logic. From the repository root:
+`tests/run_tests.R` covers the core calculations, lambda module, arrays, fields and file reading (including a PANGAEA `.tab` file in `tests/data/`); `tests/test_app.R` exercises the Shiny server logic. From the repository root:
 
 ```sh
 export LC_ALL=C.UTF-8
@@ -90,7 +90,8 @@ shiny::runApp("app")
 
 - `REE_ratios()`: HREE/LREE, MREE/MREE\*, Ce/Ce\*, La/La\*, Eu/Eu\*, Gd/Gd\*, anthropogenic Gd, REE roughness and the screening flags;
 - `REE_lambda()`: λ0–λ4 and τ1–τ4 (BLambdaR port) with λ roughness;
-- `REE_spectrum()`: normalised REE patterns as a table and a ggplot2 figure.
+- `REE_spectrum()`: normalised REE patterns as a table and a ggplot2 figure;
+- `REE_read()`: reads CSV, TSV and PANGAEA `.tab` files (metadata header skipped, dataset citation kept).
 
 ```r
 source("functions/REE_functions.R")
@@ -99,7 +100,7 @@ lam <- REE_lambda(mydata, basis = "molar")
 sp  <- REE_spectrum(mydata, basis = "molar", colour = "depth", keep = res$screen == "ok")
 ```
 
-Only base R is needed (ggplot2 for `REE_spectrum()`). See `functions/examples.R` for more examples, including the cross-plot and the roughness distribution. `functions/test_functions.R` checks that the functions reproduce the app's results for 400 random option combinations on three data sets, the λ parameters and the spectra.
+Only base R is needed (ggplot2 for `REE_spectrum()`). See `functions/examples.R` for more examples, including the cross-plot and the roughness distribution. `functions/test_functions.R` checks that the functions reproduce the app's results for 400 random option combinations on three data sets, the λ parameters, the spectra and a PANGAEA file.
 
 ## Rebuilding the reference data
 
@@ -116,7 +117,7 @@ Only base R is needed (ggplot2 for `REE_spectrum()`). See `functions/examples.R`
 
 ## Licence and data
 
-Code: MIT, see `LICENSE`. The GEOTRACES IDP2025 subset in `data-raw/` and `app/data/` is redistributed under the Creative Commons Attribution 4.0 licence of the IDP2025 ([Fair Use Agreement](https://www.geotraces.org/idp-fair-use-document/)); please cite it as given in the references. The other reference data are compiled from the publications listed below.
+Code: MIT, see `LICENSE`. The GEOTRACES IDP2025 subset in `data-raw/` and `app/data/` is redistributed under the Creative Commons Attribution 4.0 licence of the IDP2025 ([Fair Use Agreement](https://www.geotraces.org/idp-fair-use-document/)); please cite it as given in the references. The other reference data are compiled from the publications listed below. The test file `tests/data/MSM96_So268_REE.tab` is a PANGAEA dataset (Paul, 2025; CC-BY 4.0).
 
 ## References
 
@@ -141,6 +142,7 @@ Code: MIT, see `LICENSE`. The GEOTRACES IDP2025 subset in `data-raw/` and `app/d
 - O'Neill, H.St.C., 2016. The smoothness and shapes of chondrite-normalized rare earth element patterns in basalts. J. Petrol. 57, 1463–1508. https://doi.org/10.1093/petrology/egw047
 - Osborne, A.H., Hathorne, E.C., Schijf, J., Plancherel, Y., Böning, P., Frank, M., 2017. The potential of sedimentary foraminiferal rare earth element patterns to trace water masses in the past. Geochem. Geophys. Geosyst. 18, 1550–1568. https://doi.org/10.1002/2016GC006782
 - Palmer, M.R., 1985. Rare earth elements in foraminifera tests. Earth Planet. Sci. Lett. 73, 285–298. https://doi.org/10.1016/0012-821X(85)90077-9
+- Paul, S.A.L., 2025. Rare earth element and yttrium concentrations in leach fractions of sediment cores from the Atlantic (MSM96) and Pacific (SO268) [dataset]. PANGAEA. https://doi.org/10.1594/PANGAEA.982625
 - Pourmand, A., Dauphas, N., Ireland, T.J., 2012. A novel extraction chromatography and MC-ICP-MS technique for rapid analysis of REE, Sc and Y: Revising CI-chondrite and Post-Archean Australian Shale (PAAS) abundances. Chem. Geol. 291, 38–54. https://doi.org/10.1016/j.chemgeo.2011.08.011
 - Shannon, R.D., 1976. Revised effective ionic radii and systematic studies of interatomic distances in halides and chalcogenides. Acta Crystallogr. A 32, 751–767. https://doi.org/10.1107/S0567739476001551
 - Shaw, D.M., Cramer, J.J., Higgins, M.D., Truscott, M.G., 1986. Composition of the Canadian Precambrian shield and the continental crust of the earth. Geol. Soc. Lond. Spec. Publ. 24, 275–282. https://doi.org/10.1144/GSL.SP.1986.024.01.24

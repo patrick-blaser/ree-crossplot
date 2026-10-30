@@ -1,0 +1,70 @@
+/* DATA DESCRIPTION:
+Citation:	Paul, Sophie Anna Luise (2025): Rare earth element and yttrium concentrations in leach fractions of sediment cores from the Atlantic (MSM96) and Pacific (SO268) [dataset]. PANGAEA, https://doi.org/10.1594/PANGAEA.982625, 
+	In: Paul, Sophie Anna Luise; Scholz, Florian; Fröhberg, Nico; Schmidt, Katja (2025): Neodymium isotope compositions, rare earth element concentrations and ancillary geochemical data for sediment cores, pore water and bottom seawater from the Atlantic and Pacific Oceans [dataset bundled publication]. PANGAEA, https://doi.org/10.1594/PANGAEA.981262
+Abstract:	The Neodymium (Nd) isotopic signature (εNd) has been widely used as a proxy to reconstruct past ocean circulation. Recently it has been increasingly questioned which archives can be reliably used to extract authigenic εNd used for the reconstruction of past ocean circulation and under which environmental conditions bottom seawater εNd are altered and the original water mass signature is overprinted. This dataset contains rare earth element and yttrium (REY) concentrations of authigenic, carbonate, stable Mn and Fe, and detrital sedimentary phases from the abyssal Atlantic and Pacific Oceans, focusing on the distribution of REY in different sedimentary phases in oxic deep-sea sediments. 
+	Samples for the Atlantic were collected during cruise MSM96 in 2020 and for the Pacific during cruise SO268 in 2019 using multicorers. Authigenic phases were extracted through a 10s leaching procedure using 0.005 M hydroxylammonium hydrochloride, 1.5% acetic acid, and 0.03 M Na-EDTA buffered to pH 4 with NaOH solution (Huang et al., 2021). The carbonate fraction was leached with 40% acetic acid buffered to pH 4 using Na acetate. Stable Mn and Fe phases were extracted using a "strong" leach using 0.05 M hydroxylammonium hydrochloride, 15% acetic acid and 0.03 M Na-EDTA buffered to pH 4 with NaOH solution. The leftover detrital sediment fraction was processed using alkaline fusion.
+	Samples were analyzed using a quadrupole ICP-MS Agilent Technologies 7500 Series (GEOMAR, Kiel). Europium data for the detrital fraction were corrected for Ba oxide interferences. The oxide yield was 0.08%.
+Related to:	Huang, H; Gutjahr, Marcus; Kuhn, Gerhard; Hathorne, Ed C; Eisenhauer, Anton (2021): Efficient Extraction of Past Seawater Pb and Nd Isotope Signatures From Southern Ocean Sediments. Geochemistry, Geophysics, Geosystems, 22(3), https://doi.org/10.1029/2020GC009287
+Project(s):	JPI Oceans - Ecological Aspects of Deep-Sea Mining (JPIO-MiningImpact) (URI: https://miningimpact.geomar.de)
+Funding:	German Research Foundation (DFG) (URI: http://www.dfg.de/en/), grant/award no. 458637508: Early diagenetic alteration of rare earth element and yttrium (REY) signals in marine sediments and impact on the use of REY as tracers in past and present marine environments (URI: https://gepris.dfg.de/project/458637508)
+Coverage:	MEDIAN LATITUDE: 27.981700 * MEDIAN LONGITUDE: -68.825437 * SOUTH-BOUND LATITUDE: 11.840783 * WEST-BOUND LONGITUDE: -125.916717 * NORTH-BOUND LATITUDE: 47.898530 * EAST-BOUND LONGITUDE: -14.815270
+	DATE/TIME START: 2019-04-19T11:48:29 * DATE/TIME END: 2020-10-27T14:11:14
+	MINIMUM DEPTH, sediment/rock: 0.005 m * MAXIMUM DEPTH, sediment/rock: 0.100 m
+Event(s):	MSM96_11-1 (KIEL0233GEMU201) * LATITUDE: 47.898530 * LONGITUDE: -14.815270 * DATE/TIME: 2020-10-16T01:07:03 * ELEVATION: -5730.4 m * LOCATION: North Atlantic Ocean * CAMPAIGN: MSM96 (GPF 20‐3_088) * BASIS: Maria S. Merian (URI: https://en.wikipedia.org/wiki/RV_Maria_S._Merian) * METHOD/DEVICE: Multicorer with television (TVMUC)
+	MSM96_36-1 (KIEL0233GEYU201) * LATITUDE: 38.155870 * LONGITUDE: -17.514530 * DATE/TIME: 2020-10-27T14:11:14 * ELEVATION: -6331.3 m * LOCATION: North Atlantic Ocean * CAMPAIGN: MSM96 (GPF 20‐3_088) * BASIS: Maria S. Merian (URI: https://en.wikipedia.org/wiki/RV_Maria_S._Merian) * METHOD/DEVICE: MultiCorer (MUC)
+	SO268/2_139-1 (MUC-30) * LATITUDE: 14.031617 * LONGITUDE: -125.916717 * DATE/TIME: 2019-04-19T11:48:29 * ELEVATION: -4523.5 m * LOCATION: Clarion-Clipperton Fraction Zone, North East Pacific Ocean * CAMPAIGN: SO268/2 * BASIS: Sonne_2 (URI: https://uol.de/icbm/forschungsplattformen-schiffe/sonne) * METHOD/DEVICE: MultiCorer (MUC) * COMMENT: BEL Reference; Position USBL
+	SO268/2_172-1 (MUC-32) * LATITUDE: 11.840783 * LONGITUDE: -117.055233 * DATE/TIME: 2019-05-08T06:52:59 * ELEVATION: -4134.4 m * LOCATION: Clarion-Clipperton Fraction Zone, North East Pacific Ocean * CAMPAIGN: SO268/2 * BASIS: Sonne_2 (URI: https://uol.de/icbm/forschungsplattformen-schiffe/sonne) * METHOD/DEVICE: MultiCorer (MUC) * COMMENT: GER Reference; Position USBL
+Parameter(s):	Event label (Event)
+	Date/Time of event (Date/Time)
+	Latitude of event (Latitude)
+	Longitude of event (Longitude)
+	DEPTH, sediment/rock [m] (Depth sed) * GEOCODE
+	Depth, top/min [m] (Depth top)
+	Depth, bottom/max [m] (Depth bot)
+	Sample code/label (Sample label)
+	Yttrium [mg/kg] (Y)
+	Lanthanum [mg/kg] (La)
+	Cerium [mg/kg] (Ce)
+	Praseodymium [mg/kg] (Pr)
+	Neodymium [mg/kg] (Nd)
+	Samarium [mg/kg] (Sm)
+	Europium [mg/kg] (Eu)
+	Gadolinium [mg/kg] (Gd)
+	Terbium [mg/kg] (Tb)
+	Dysprosium [mg/kg] (Dy)
+	Holmium [mg/kg] (Ho)
+	Erbium [mg/kg] (Er)
+	Thulium [mg/kg] (Tm)
+	Ytterbium [mg/kg] (Yb)
+	Lutetium [mg/kg] (Lu)
+License:	Creative Commons Attribution 4.0 International (CC-BY-4.0) (URI: https://creativecommons.org/licenses/by/4.0/)
+Status:	Curation Level: Enhanced curation (URI: https://wiki.pangaea.de/wiki/Curation_levels)
+Size:	461 data points
+*/
+Event	Date/Time	Latitude	Longitude	Depth sed [m]	Depth top [m]	Depth bot [m]	Sample label	Y [mg/kg]	La [mg/kg]	Ce [mg/kg]	Pr [mg/kg]	Nd [mg/kg]	Sm [mg/kg]	Eu [mg/kg]	Gd [mg/kg]	Tb [mg/kg]	Dy [mg/kg]	Ho [mg/kg]	Er [mg/kg]	Tm [mg/kg]	Yb [mg/kg]	Lu [mg/kg]
+SO268/2_172-1	2019-05-08T06:52:59	11.8408	-117.0552	0.005	0.00	0.01	172MUC 0-2 cm authigenic	32.21	15.41	7.48	5.64	24.11	6.33	1.57	6.81	1.085	6.36	1.236	3.46	0.472	3.05	0.455
+SO268/2_172-1	2019-05-08T06:52:59	11.8408	-117.0552	0.090	0.08	0.10	172MUC 16-20 cm authigenic	26.29	13.13	7.09	4.61	19.59	5.10	1.25	5.41	0.845	4.92	0.970	2.70	0.365	2.34	0.354
+SO268/2_139-1	2019-04-19T11:48:29	14.0316	-125.9167	0.005	0.00	0.01	139MUC 0-2 cm authigenic	40.29	18.79	9.56	7.14	30.51	8.24	2.02	8.68	1.392	8.03	1.554	4.28	0.593	3.80	0.569
+SO268/2_139-1	2019-04-19T11:48:29	14.0316	-125.9167	0.090	0.08	0.10	139MUC 16-20 cm authigenic	34.98	16.68	9.00	6.19	26.35	7.03	1.72	7.36	1.174	6.81	1.319	3.65	0.496	3.18	0.476
+SO268/2_172-1	2019-05-08T06:52:59	11.8408	-117.0552	0.005	0.00	0.01	172MUC 0-2 cm carbonate	1.96	2.16	1.05	0.48	2.03	0.45	0.11	0.46	0.060	0.39	0.081	0.25	0.030	0.25	0.036
+SO268/2_172-1	2019-05-08T06:52:59	11.8408	-117.0552	0.090	0.08	0.10	172MUC 16-20 cm carbonate	6.24	2.76	6.47	0.87	3.91	1.07	0.29	1.30	0.190	1.20	0.237	0.68	0.087	0.68	0.093
+SO268/2_139-1	2019-04-19T11:48:29	14.0316	-125.9167	0.005	0.00	0.01	139MUC 0-2 cm carbonate	1.23	1.32	1.46	0.29	1.18	0.28	0.07	0.32	0.037	0.25	0.048	0.15	0.016	0.17	0.018
+SO268/2_139-1	2019-04-19T11:48:29	14.0316	-125.9167	0.090	0.08	0.10	139MUC 16-20 cm carbonate	2.57	1.83	8.40	0.41	1.77	0.47	0.11	0.53	0.073	0.50	0.099	0.27	0.035	0.27	0.038
+SO268/2_172-1	2019-05-08T06:52:59	11.8408	-117.0552	0.090	0.08	0.10	172MUC 16-20 cm detrital	10.03	16.91	34.78	3.57	11.90	2.23	0.47	2.03	0.274	1.73	0.365	1.11		1.25	0.197
+SO268/2_139-1	2019-04-19T11:48:29	14.0316	-125.9167	0.005	0.00	0.01	139MUC 0-2 cm detrital	12.36	20.57	47.31	4.42	14.76	2.70	0.53	2.44	0.346	2.07	0.444	1.41		1.52	0.229
+SO268/2_139-1	2019-04-19T11:48:29	14.0316	-125.9167	0.090	0.08	0.10	139MUC 16-20 cm detrital	11.46	18.72	41.47	4.01	13.38	2.35	0.46	2.18	0.322	1.91	0.412	1.31		1.47	0.219
+MSM96_11-1	2020-10-16T01:07:03	47.8985	-14.8153	0.070	0.02	0.12	11MUC 4-24 cm pooled authigenic	3.29	2.58	2.13	0.71	2.85	0.64	0.15	0.68	0.101	0.58	0.113	0.31	0.041	0.25	0.033
+MSM96_36-1	2020-10-27T14:11:14	38.1559	-17.5145	0.010	0.00	0.02	36MUC 0-4 cm pooled authigenic	3.79	3.40	2.81	0.98	3.86	0.86	0.20	0.88	0.130	0.73	0.138	0.37	0.046	0.28	0.037
+MSM96_36-1	2020-10-27T14:11:14	38.1559	-17.5145	0.100	0.08	0.12	36MUC 16-24 cm pooled authigenic	4.72	4.58	4.69	1.26	4.85	1.06	0.24	1.08	0.162	0.90	0.171	0.46	0.060	0.37	0.051
+MSM96_11-1	2020-10-16T01:07:03	47.8985	-14.8153	0.010	0.00	0.02	11MUC 0-4 cm pooled carbonate	1.72	1.71	3.58	0.45	1.80	0.39	0.09	0.38	0.047	0.29	0.052	0.15	0.015	0.12	0.013
+MSM96_11-1	2020-10-16T01:07:03	47.8985	-14.8153	0.070	0.02	0.12	11MUC 4-24 cm pooled carbonate	1.31	1.36	2.89	0.36	1.41	0.29	0.07	0.31	0.042	0.25	0.049	0.12	0.017	0.10	0.017
+MSM96_36-1	2020-10-27T14:11:14	38.1559	-17.5145	0.010	0.00	0.02	36MUC 0-4 cm pooled carbonate	1.56	1.93	3.73	0.52	2.11	0.45	0.10	0.43	0.053	0.32	0.051	0.16	0.013	0.12	0.012
+MSM96_36-1	2020-10-27T14:11:14	38.1559	-17.5145	0.100	0.08	0.12	36MUC 16-24 cm pooled carbonate	2.01	2.59	5.82	0.70	2.68	0.54	0.12	0.55	0.068	0.41	0.069	0.19	0.024	0.16	0.015
+MSM96_11-1	2020-10-16T01:07:03	47.8985	-14.8153	0.010	0.00	0.02	11MUC 0-4 cm pooled strong leach	1.01	0.60	2.14	0.20	0.84	0.21	0.05	0.22	0.030	0.18	0.034	0.09	0.010	0.07	0.010
+MSM96_11-1	2020-10-16T01:07:03	47.8985	-14.8153	0.070	0.02	0.12	11MUC 4-24 cm pooled strong leach	0.72	0.47	1.54	0.16	0.67	0.17	0.04	0.18	0.020	0.14	0.024	0.07	0.007	0.05	0.007
+MSM96_36-1	2020-10-27T14:11:14	38.1559	-17.5145	0.010	0.00	0.02	36MUC 0-4 cm pooled strong leach	1.12	0.69	4.26	0.21	0.84	0.21	0.05	0.25	0.030	0.20	0.039	0.11	0.013	0.09	0.013
+MSM96_36-1	2020-10-27T14:11:14	38.1559	-17.5145	0.100	0.08	0.12	36MUC 16-24 cm pooled strong leach	1.40	1.06	5.80	0.33	1.31	0.32	0.07	0.36	0.050	0.27	0.050	0.13	0.017	0.11	0.015
+MSM96_11-1	2020-10-16T01:07:03	47.8985	-14.8153	0.010	0.00	0.02	11MUC 0-4 cm pooled detrital	13.65	28.35	55.17	6.40	21.87	3.67	0.71	3.29	0.450	2.76	0.579	1.73		1.71	0.271
+MSM96_11-1	2020-10-16T01:07:03	47.8985	-14.8153	0.070	0.02	0.12	11MUC 4-24 cm pooled detrital	12.18	26.38	50.76	5.86	20.08	3.29	0.64	3.03	0.409	2.43	0.497	1.57		1.62	0.237
+MSM96_36-1	2020-10-27T14:11:14	38.1559	-17.5145	0.010	0.00	0.02	36MUC 0-4 cm pooled detrital	14.59	30.83	61.51	6.67	22.59	3.87	0.77	3.40	0.462	2.78	0.573	1.76		1.78	0.264
+MSM96_36-1	2020-10-27T14:11:14	38.1559	-17.5145	0.100	0.08	0.12	36MUC 16-24 cm pooled detrital	14.43	29.84	58.92	6.58	22.32	3.75	0.78	3.42	0.465	2.84	0.593	1.70		1.70	0.258

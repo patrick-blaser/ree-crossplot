@@ -2,7 +2,9 @@
 # Reading and checking user uploads
 # ---------------------------------------------------------------------------
 
-#' Read a user file (csv / tsv / txt; xlsx if readxl is available)
+#' Read a user file (csv / tsv / txt / PANGAEA .tab; xlsx if readxl is available).
+#' PANGAEA files start with a metadata block between "/* DATA DESCRIPTION:" and "*/"; it is skipped
+#' and the dataset citation, DOI and licence are kept in attr(, "source").
 read_user_file <- function(path, name = basename(path)) {
   ext <- tolower(tools::file_ext(name))
   if (ext %in% c("xlsx", "xls")) {
@@ -11,24 +13,61 @@ read_user_file <- function(path, name = basename(path)) {
     }
     return(as.data.frame(readxl::read_excel(path), stringsAsFactors = FALSE))
   }
-  first <- readLines(path, n = 1, warn = FALSE, encoding = "UTF-8")
-  first <- sub("^﻿", "", first)
-  seps <- c(`,` = lengths(regmatches(first, gregexpr(",", first))),
-            `;` = lengths(regmatches(first, gregexpr(";", first))),
-            `\t` = lengths(regmatches(first, gregexpr("\t", first))))
-  sep <- names(which.max(seps))
+  lines <- readLines(path, warn = FALSE, encoding = "UTF-8")
+  if (length(lines)) lines[1] <- sub("^\ufeff", "", lines[1])
+  first <- which(nzchar(trimws(lines)))[1]
+  if (is.na(first)) stop("The file is empty.")
+  src <- NULL
+  if (startsWith(trimws(lines[first]), "/*")) {               # PANGAEA metadata header
+    end <- which(trimws(lines) == "*/" | grepl("\\*/\\s*$", lines))
+    end <- end[end >= first][1]
+    if (is.na(end)) stop("The file starts with a '/*' header that is never closed ('*/').")
+    src <- parse_pangaea_header(lines[first:end])
+    lines <- lines[-seq_len(end)]
+    first <- which(nzchar(trimws(lines)))[1]
+    if (is.na(first)) stop("The file contains no data table after its header.")
+  }
+  lines <- lines[first:length(lines)]
+  hdr <- lines[1]
+  seps <- c(`,` = lengths(regmatches(hdr, gregexpr(",", hdr))),
+            `;` = lengths(regmatches(hdr, gregexpr(";", hdr))),
+            `\t` = lengths(regmatches(hdr, gregexpr("\t", hdr))))
+  sep <- if (!is.null(src)) "\t" else names(which.max(seps))
   dec <- if (sep == ";") "," else "."
-  utils::read.table(path, header = TRUE, sep = sep, dec = dec, quote = "\"", comment.char = "",
-                    stringsAsFactors = FALSE, check.names = FALSE, na.strings = c("NA", "", "n.d.", "nd", "NaN"),
-                    fileEncoding = "UTF-8-BOM", strip.white = TRUE)
+  con <- textConnection(lines, encoding = "UTF-8"); on.exit(close(con))
+  df <- utils::read.table(con, header = TRUE, sep = sep, dec = dec, quote = if (is.null(src)) "\"" else "",
+                          comment.char = "", stringsAsFactors = FALSE, check.names = FALSE,
+                          na.strings = c("NA", "", "n.d.", "nd", "NaN"), strip.white = TRUE)
+  if (!is.null(src)) attr(df, "source") <- src
+  df
+}
+
+#' Citation, DOI and licence from the metadata block of a PANGAEA file
+parse_pangaea_header <- function(h) {
+  key <- sub("^([^\t:]+):\t.*$", "\\1", h)
+  key[!grepl("^[^\t:]+:\t", h)] <- NA_character_
+  field <- function(k) {
+    i <- which(key == k)[1]
+    if (is.na(i)) return(NA_character_)
+    j <- i
+    while (j < length(h) && is.na(key[j + 1]) && startsWith(h[j + 1], "\t")) j <- j + 1
+    trimws(gsub("\\s+", " ", paste(sub("^[^\t]*\t", "", h[i:j]), collapse = " ")))
+  }
+  cit <- field("Citation")
+  first_cit <- sub("[ ,;]+$", "", sub("\\s+In: .*$", "", cit))   # the dataset itself, not the bundle it is part of
+  doi <- regmatches(first_cit, regexpr("10\\.[0-9]{4,}/[^ ,;]+", first_cit))
+  list(type = "PANGAEA", citation = first_cit, doi = if (length(doi)) sub("[.,]$", "", doi) else NA_character_,
+       licence = field("License"))
 }
 
 #' Map column names to REE symbols. A column matches when it starts with an element symbol that
-#' is not followed by another letter ("La", "La_ppm", "Nd (ppb)", "Yb.nmol/kg", ...).
+#' is not followed by another letter or a slash ("La", "La_ppm", "Nd (ppb)", "Yb [mg/kg]", ...;
+#' ratios such as "Ce/Ce*" or "La/Yb" are not taken for the element).
+REE_COL_PATTERN <- "^[A-Za-z]{2}(?![A-Za-z]|\\s*/)"
 detect_ree_columns <- function(nms) {
-  m <- regmatches(nms, regexpr("^[A-Za-z]{2}(?![A-Za-z])", nms, perl = TRUE))
+  m <- regmatches(nms, regexpr(REE_COL_PATTERN, nms, perl = TRUE))
   sym <- rep(NA_character_, length(nms))
-  hit <- grepl("^[A-Za-z]{2}(?![A-Za-z])", nms, perl = TRUE)
+  hit <- grepl(REE_COL_PATTERN, nms, perl = TRUE)
   sym[hit] <- m
   idx <- match(tolower(sym), tolower(REE))
   out <- setNames(nms[!is.na(idx)], REE[idx[!is.na(idx)]])
@@ -37,7 +76,7 @@ detect_ree_columns <- function(nms) {
 
 #' Name of the yttrium column ("Y", "Y_ppm", "Y (ppb)" ...), or NULL
 detect_y_column <- function(nms) {
-  hit <- grep("^Y(?![A-Za-z])", nms, perl = TRUE, value = TRUE)
+  hit <- grep("^Y(?![A-Za-z]|\\s*/)", nms, perl = TRUE, value = TRUE)
   if (length(hit)) hit[1] else NULL
 }
 
@@ -50,6 +89,21 @@ natural_sort <- function(x) {
                  tolower(parts)), collapse = "")
   }, character(1))
   x[order(key, x)]
+}
+
+#' Unit basis from the units in the REE column names ("La [mg/kg]", "Nd_pmol/kg", "Ce (ppb)" ...)
+#' @return list(basis = "mass"/"molar"/"mixed"/NA, units = distinct unit strings found)
+guess_basis_from_units <- function(cols) {
+  u <- vapply(cols, function(nm) {
+    b <- regmatches(nm, regexpr("\\[[^]]+\\]|\\([^)]+\\)", nm))
+    if (length(b)) gsub("^[[(]|[])]$", "", b) else sub("^[A-Za-z]{2}[ _.]*", "", nm)
+  }, character(1))
+  cls <- ifelse(grepl("mol", u, ignore.case = TRUE), "molar",
+         ifelse(grepl("ppm|ppb|ppt|g/g|g/kg|g/t|g g|mg|\u00b5g|ug|ng|pg", u, ignore.case = TRUE), "mass", NA_character_))
+  units <- unique(u[nzchar(u)])
+  if (all(is.na(cls))) return(list(basis = NA_character_, units = units))
+  if (any(is.na(cls)) || length(unique(cls)) > 1) return(list(basis = "mixed", units = units))
+  list(basis = cls[1], units = units)
 }
 
 #' Guess the two ratio columns of a table of pre-computed ratios

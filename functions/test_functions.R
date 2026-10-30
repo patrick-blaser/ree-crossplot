@@ -97,4 +97,13 @@ check("spectrum figure builds (numeric colour, radius axis)", inherits(ggplot2::
 p <- REE_spectrum(gappy, colour = "group", connect = FALSE, plot = FALSE)$plot
 check("spectrum figure builds (groups, broken lines)", inherits(ggplot2::ggplot_build(p), "ggplot_built"))
 cat("REE_spectrum: normalised values agree with the app; figures build\n")
+# ---- PANGAEA .tab: REE_read() + unit-based basis give the app's results ---------------------------
+pg <- REE_read("tests/data/MSM96_So268_REE.tab")
+pa <- local({ owd <- setwd("app"); on.exit(setwd(owd)); app$read_user_file("../tests/data/MSM96_So268_REE.tab", "x.tab") })
+check("REE_read and the app read the same table and DOI", identical(dim(pg), dim(pa)) && identical(attr(pg, "source"), attr(pa, "source")))
+a <- app$prepare_user_data(pa, "concentrations", "mass", app$default_cfg())$data
+s <- REE_ratios(pg, append = FALSE)
+check("PANGAEA: basis guessed from '[mg/kg]'", all(s$basis == "mass"))
+for (k in names(pairs)) check(sprintf("PANGAEA / %s", k), same(s[[k]], a[[pairs[[k]]]]))
+cat("REE_read: PANGAEA file read as in the app; results agree\n")
 cat(sprintf("All %d checks passed.\n", n_pass))

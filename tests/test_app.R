@@ -190,4 +190,20 @@ testServer(app_path, {
         identical(rough_col(), "lambda_rough") && nrow(rough_ref()) > 3000 && max(rough_ref()$v) < 0.1)
   check("lambda roughness figure builds", inherits(rough_fig(), "ggplot"))
 })
+
+# PANGAEA .tab upload (Paul, 2025, https://doi.org/10.1594/PANGAEA.982625, CC-BY 4.0)
+testServer(app_path, {
+  pgf <- normalizePath(file.path(app_path, "..", "tests", "data", "MSM96_So268_REE.tab"))
+  set_all(session, file = data.frame(name = "MSM96_So268_REE.tab", datapath = pgf, size = 1, type = "text/plain"), id_col = "Sample label", basis = "mass")
+  u <- user_data()
+  check("PANGAEA .tab loads through the app (26 rows, all plottable)", nrow(u) == 26 && all(is.finite(u$x)))
+  sn <- html(output$source_note)
+  check("dataset citation, DOI link and unit note are shown",
+        grepl("PANGAEA dataset", sn) && grepl("10.1594/PANGAEA.982625", sn) && grepl("mg/kg", sn) && grepl("mass basis", sn))
+  tb <- computed()
+  check("results table carries the dataset citation and DOI",
+        all(tb$source_doi == "10.1594/PANGAEA.982625") && all(grepl("Paul", tb$source_dataset)))
+  check("sample IDs come from the 'Sample label' column", tb$sample[1] == "172MUC 0-2 cm authigenic")
+})
+
 cat("\nAll", cnt, "app checks passed.\n")

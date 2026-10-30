@@ -57,8 +57,8 @@ ui <- fluidPage(
     sidebarPanel(
       width = 4,
       section("1 · Your data", open = TRUE,
-        fileInput("file", NULL, accept = c(".csv", ".tsv", ".txt", ".xlsx"),
-                  buttonLabel = "Browse…", placeholder = "CSV / TSV with REE data"),
+        fileInput("file", NULL, accept = c(".csv", ".tsv", ".txt", ".tab", ".xlsx"),
+                  buttonLabel = "Browse…", placeholder = "CSV / TSV / PANGAEA .tab"),
         checkboxInput("use_example", "Use example data (Labrador Sea seawater, Filippova et al. 2017)", FALSE),
         radioButtons("mode", NULL, inline = TRUE,
                      choices = c("REE concentrations" = "concentrations", "Pre-computed ratios" = "ratios")),
@@ -74,6 +74,7 @@ ui <- fluidPage(
         selectizeInput("id_extra", "Further columns to carry into the results", choices = NULL, multiple = TRUE,
                        options = list(placeholder = "optional")),
         uiOutput("status"),
+        uiOutput("source_note"),
         uiOutput("mapping")),
       section("2 · Normalisation & ratios",
         div(class = "lam-off",
@@ -228,8 +229,15 @@ server <- function(input, output, session) {
     df <- tryCatch(raw_df(), error = function(e) NULL)
     req(df)
     nms <- names(df)
+    id_guess <- c("sample", "Sample label", "Sample code/label", "Label", "Sample ID", "Event")
+    id_guess <- id_guess[id_guess %in% nms]
     updateSelectInput(session, "id_col", choices = c("(none)", nms),
-                      selected = if ("sample" %in% nms) "sample" else "(none)")
+                      selected = if (length(id_guess)) id_guess[1] else "(none)")
+    # unit basis from the column names (e.g. "La [mg/kg]"), unless a 'basis' column decides per row
+    if (!"basis" %in% tolower(nms)) {
+      ub <- guess_basis_from_units(detect_ree_columns(nms))
+      if (ub$basis %in% c("mass", "molar")) updateRadioButtons(session, "basis", selected = ub$basis)
+    }
     nonree <- setdiff(nms, c(detect_ree_columns(nms), detect_y_column(nms)))
     updateSelectInput(session, "group_col", choices = c("(none)", nonree),
                       selected = if ("group" %in% nms) "group" else "(none)")
@@ -387,6 +395,40 @@ server <- function(input, output, session) {
             lapply(p$messages, function(m) div(class = "status-warn", m)))
   })
 
+  # provenance and unit messages for the loaded file
+  source_info <- reactive({
+    df <- tryCatch(raw_df(), error = function(e) NULL)
+    if (is.null(df)) return(NULL)
+    src <- attr(df, "source")
+    nms <- names(df)
+    ub <- if (!"basis" %in% tolower(nms)) guess_basis_from_units(detect_ree_columns(nms)) else NULL
+    list(src = src, ub = ub)
+  })
+  output$source_note <- renderUI({
+    si <- source_info(); if (is.null(si) || identical(input$mode, "ratios")) return(NULL)
+    out <- list()
+    if (!is.null(si$src)) {
+      doi <- si$src$doi
+      out <- c(out, list(div(class = "small-note", tags$b("PANGAEA dataset: "), si$src$citation,
+        if (!is.na(doi)) tagList(" (", tags$a(href = paste0("https://doi.org/", doi), target = "_blank", "doi"), ")"),
+        if (!is.na(si$src$licence) && grepl("CC-BY|Attribution", si$src$licence))
+          " Licence CC-BY: please cite the dataset.")))
+    }
+    ub <- si$ub
+    if (!is.null(ub) && length(ub$units)) {
+      if (ub$basis %in% c("mass", "molar")) {
+        out <- c(out, list(div(class = "status-ok", sprintf("Units read from the column names: %s (%s basis selected).",
+                                                           paste(ub$units, collapse = ", "), ub$basis))))
+        if (ub$basis == "molar" && !any(grepl("pmol", ub$units)))
+          out <- c(out, list(div(class = "status-warn", "The Spectra tab takes molar data as pmol/kg: its absolute values are scaled accordingly; ratios are unaffected.")))
+      } else if (identical(ub$basis, "mixed")) {
+        out <- c(out, list(div(class = "status-warn", sprintf("The REE columns have different units (%s): check them, or add a 'basis' column.",
+                                                             paste(ub$units, collapse = ", ")))))
+      }
+    }
+    tagList(out)
+  })
+
   output$mapping <- renderUI({
     p <- tryCatch(prepped(), error = function(e) NULL)
     if (is.null(p) || !is.null(p$error) || nrow(p$mapping) == 0) return(NULL)
@@ -457,7 +499,10 @@ server <- function(input, output, session) {
     ids <- c("row", "sample", "group")
     ex <- p$extra[, intersect(input$id_extra, names(p$extra)), drop = FALSE]
     ex <- ex[, setdiff(names(ex), c(ids, names(out))), drop = FALSE]
-    cbind(out[ids], ex, out[setdiff(names(out), ids)], settings_cols(), row.names = NULL)
+    res <- cbind(out[ids], ex, out[setdiff(names(out), ids)], settings_cols(), row.names = NULL)
+    src <- tryCatch(attr(raw_df(), "source"), error = function(e) NULL)
+    if (!is.null(src)) { res$source_dataset <- src$citation; res$source_doi <- src$doi }
+    res
   })
   output$table <- renderTable(computed(), digits = 3)
 

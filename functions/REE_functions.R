@@ -6,6 +6,7 @@
 #   REE_lambda()    lambda (orthogonal polynomial) shape parameters after Anenburg and
 #                   Williams (2022), base-R port of BLambdaR, with lambda roughness
 #   REE_spectrum()  normalised REE patterns (spectra), table and ggplot2 figure
+#   REE_read()      read CSV / TSV / PANGAEA .tab files (metadata header skipped, citation kept)
 #
 # The functions give the same results as the app (https://patrick-blaser.github.io/ree-crossplot/)
 # with the same options and defaults. They only need base R; REE_spectrum() also needs ggplot2.
@@ -62,19 +63,34 @@
 
 # ---- input handling ----------------------------------------------------------------------------
 
-#' Map column names to REE symbols ("La", "La_ppm", "Nd (ppb)", "Yb.nmol/kg" ...)
+#' Map column names to REE symbols ("La", "La_ppm", "Nd (ppb)", "Yb [mg/kg]" ...); ratios such as
+#' "Ce/Ce*" or "La/Yb" are not taken for the element
+.REE_COL_PATTERN <- "^[A-Za-z]{2}(?![A-Za-z]|\\s*/)"
 .ree_detect_columns <- function(nms) {
-  hit <- grepl("^[A-Za-z]{2}(?![A-Za-z])", nms, perl = TRUE)
+  hit <- grepl(.REE_COL_PATTERN, nms, perl = TRUE)
   sym <- rep(NA_character_, length(nms))
-  sym[hit] <- regmatches(nms, regexpr("^[A-Za-z]{2}(?![A-Za-z])", nms, perl = TRUE))
+  sym[hit] <- regmatches(nms, regexpr(.REE_COL_PATTERN, nms, perl = TRUE))
   idx <- match(tolower(sym), tolower(.REE))
   out <- setNames(nms[!is.na(idx)], .REE[idx[!is.na(idx)]])
   out[!duplicated(names(out))]
 }
 
 .ree_detect_y <- function(nms) {
-  hit <- grep("^Y(?![A-Za-z])", nms, perl = TRUE, value = TRUE)
+  hit <- grep("^Y(?![A-Za-z]|\\s*/)", nms, perl = TRUE, value = TRUE)
   if (length(hit)) hit[1] else NULL
+}
+
+#' Unit basis from the units in the REE column names ("La [mg/kg]", "Nd_pmol/kg" ...)
+.ree_units_basis <- function(cols) {
+  u <- vapply(cols, function(nm) {
+    b <- regmatches(nm, regexpr("\\[[^]]+\\]|\\([^)]+\\)", nm))
+    if (length(b)) gsub("^[[(]|[])]$", "", b) else sub("^[A-Za-z]{2}[ _.]*", "", nm)
+  }, character(1))
+  cls <- ifelse(grepl("mol", u, ignore.case = TRUE), "molar",
+         ifelse(grepl("ppm|ppb|ppt|g/g|g/kg|g/t|g g|mg|\u00b5g|ug|ng|pg", u, ignore.case = TRUE), "mass", NA_character_))
+  if (all(is.na(cls))) return(NA_character_)
+  if (any(is.na(cls)) || length(unique(cls)) > 1) return("mixed")
+  cls[1]
 }
 
 .ree_number <- function(v) {
@@ -102,11 +118,16 @@
 }
 
 #' Concentration basis per row: a scalar, one value per row, or the name of a column of `data`;
-#' NULL uses a column named "basis" (any case) if there is one, otherwise "mass".
+#' NULL uses a column named "basis" (any case) if there is one, otherwise the units in the REE
+#' column names ("La [mg/kg]" -> mass, "La [pmol/kg]" -> molar), otherwise "mass".
 .ree_basis <- function(data, basis) {
   if (is.null(basis)) {
     bc <- names(data)[tolower(names(data)) == "basis"]
-    basis <- if (length(bc)) data[[bc[1]]] else "mass"
+    if (length(bc)) basis <- data[[bc[1]]] else {
+      ub <- .ree_units_basis(.ree_detect_columns(names(data)))
+      if (identical(ub, "mixed")) warning("The REE columns have different units; `basis` = \"mass\" assumed. Check the units or give `basis`.")
+      basis <- if (ub %in% c("mass", "molar")) ub else "mass"
+    }
   } else if (length(basis) == 1 && basis %in% names(data)) basis <- data[[basis]]
   b <- rep_len(tolower(trimws(as.character(basis))), nrow(data))
   if (any(!b %in% c("mass", "molar")))
@@ -307,6 +328,52 @@
 # User functions
 # =================================================================================================
 
+#' Read a data file: CSV (comma or semicolon with decimal commas), TSV/TXT, or a PANGAEA .tab file
+#'
+#' For PANGAEA files the metadata block ("/* DATA DESCRIPTION: ... */") is skipped and the dataset
+#' citation, DOI and licence are returned in attr(x, "source"). Column names are kept as they are
+#' (e.g. "La [mg/kg]"), which the other functions recognise, including the units.
+#' @param path file path
+#' @return data.frame
+REE_read <- function(path) {
+  lines <- readLines(path, warn = FALSE, encoding = "UTF-8")
+  if (length(lines)) lines[1] <- sub("^\\ufeff", "", lines[1])
+  first <- which(nzchar(trimws(lines)))[1]
+  if (is.na(first)) stop("The file is empty.")
+  src <- NULL
+  if (startsWith(trimws(lines[first]), "/*")) {
+    end <- which(trimws(lines) == "*/" | grepl("\\*/\\s*$", lines))
+    end <- end[end >= first][1]
+    if (is.na(end)) stop("The file starts with a '/*' header that is never closed ('*/').")
+    h <- lines[first:end]
+    key <- sub("^([^\t:]+):\t.*$", "\\1", h); key[!grepl("^[^\t:]+:\t", h)] <- NA_character_
+    field <- function(k) {
+      i <- which(key == k)[1]; if (is.na(i)) return(NA_character_)
+      j <- i
+      while (j < length(h) && is.na(key[j + 1]) && startsWith(h[j + 1], "\t")) j <- j + 1
+      trimws(gsub("\\s+", " ", paste(sub("^[^\t]*\t", "", h[i:j]), collapse = " ")))
+    }
+    cit <- sub("[ ,;]+$", "", sub("\\s+In: .*$", "", field("Citation")))
+    doi <- regmatches(cit, regexpr("10\\.[0-9]{4,}/[^ ,;]+", cit))
+    src <- list(type = "PANGAEA", citation = cit, doi = if (length(doi)) sub("[.,]$", "", doi) else NA_character_,
+                licence = field("License"))
+    lines <- lines[-seq_len(end)]
+    first <- which(nzchar(trimws(lines)))[1]
+    if (is.na(first)) stop("The file contains no data table after its header.")
+  }
+  lines <- lines[first:length(lines)]
+  hdr <- lines[1]
+  seps <- c(`,` = lengths(regmatches(hdr, gregexpr(",", hdr))), `;` = lengths(regmatches(hdr, gregexpr(";", hdr))),
+            `\t` = lengths(regmatches(hdr, gregexpr("\t", hdr))))
+  sep <- if (!is.null(src)) "\t" else names(which.max(seps))
+  con <- textConnection(lines, encoding = "UTF-8"); on.exit(close(con))
+  df <- utils::read.table(con, header = TRUE, sep = sep, dec = if (sep == ";") "," else ".",
+                          quote = if (is.null(src)) "\"" else "", comment.char = "", stringsAsFactors = FALSE,
+                          check.names = FALSE, na.strings = c("NA", "", "n.d.", "nd", "NaN"), strip.white = TRUE)
+  if (!is.null(src)) attr(df, "source") <- src
+  df
+}
+
 #' REE ratios, anomalies, anthropogenic Gd and REE roughness
 #'
 #' Same calculation and options as the REE cross-plot app (sidebar sections "Your data",
@@ -316,6 +383,7 @@
 #'   with the element symbol ("La", "La_ppm", "Nd (pmol/kg)" ...); see `cols`.
 #' @param basis "mass" (e.g. ppm, ppb, ng/g) or "molar" (e.g. pmol/kg); a single value, one value
 #'   per row, or the name of a column. NULL (default) uses a column named "basis" if present,
+#'   otherwise the units in the REE column names (e.g. "La [mg/kg]", as in PANGAEA files),
 #'   otherwise "mass".
 #' @param norm normalising reference: "PAAS_Pourmand2012" (default), "PAAS_McLennan1989",
 #'   "NASC_McLennan1989", "EUS_Bau2018", "CI_Pourmand2012", "CI_ONeill2016" or "custom".
