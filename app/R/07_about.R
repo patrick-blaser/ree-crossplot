@@ -14,7 +14,7 @@ REFERENCES <- c(
   "Du, J., Haley, B.A., Mix, A.C., 2016. Neodymium isotopes in authigenic phases, bottom waters and detrital sediments in the Gulf of Alaska and their implications for paleo-circulation reconstruction. Geochim. Cosmochim. Acta 193, 14–35. https://doi.org/10.1016/j.gca.2016.08.005",
   "Filippova, A., Frank, M., Kienast, M., Rickli, J., Hathorne, E., Yashayaev, I.M., Pahnke, K., 2017. Water mass circulation and weathering inputs in the Labrador Sea based on coupled Hf–Nd isotope compositions and rare earth element distributions. Geochim. Cosmochim. Acta 199, 164–184. https://doi.org/10.1016/j.gca.2016.11.024",
   "Gale, A., Dalton, C.A., Langmuir, C.H., Su, Y., Schilling, J.-G., 2013. The mean composition of ocean ridge basalts. Geochem. Geophys. Geosyst. 14, 489–518. https://doi.org/10.1029/2012GC004334",
-  "GEOTRACES Intermediate Data Product Group, 2025. The GEOTRACES Intermediate Data Product 2025 (IDP2025). https://doi.org/10.5285/42C92148-8D03-8BE6-E063-7086ABC09F0C",
+  "GEOTRACES Intermediate Data Product Group, 2025. The GEOTRACES Intermediate Data Product 2025 (IDP2025). NERC EDS British Oceanographic Data Centre NOC. https://doi.org/10.5285/42c92148-8d03-8be6-e063-7086abc09f0c",
   "Hathorne, E.C., Stichel, T., Brück, B., Frank, M., 2015. Rare earth element distribution in the Atlantic sector of the Southern Ocean: The balance between particle scavenging and vertical supply. Mar. Chem. 177, 157–171. https://doi.org/10.1016/j.marchem.2015.03.011",
   "Kulaksız, S., Bau, M., 2007. Contrasting behaviour of anthropogenic gadolinium and natural rare earth elements in estuaries and the gadolinium input into the North Sea. Earth Planet. Sci. Lett. 260, 361–371. https://doi.org/10.1016/j.epsl.2007.06.016",
   "Martin, E.E., Blair, S.W., Kamenov, G.D., Scher, H.D., Bourbon, E., Basak, C., Newkirk, D.N., 2010. Extraction of Nd isotopes from bulk deep sea sediments for paleoceanographic studies on Cenozoic time scales. Chem. Geol. 269, 414–431. https://doi.org/10.1016/j.chemgeo.2009.10.016",
@@ -45,10 +45,6 @@ REF_LABELS <- c(
 
 about_ui <- function() {
   shiny::tagList(
-    shiny::h4("How to cite"),
-    shiny::p("The MREE/MREE* vs HREE/LREE diagram was introduced by Martin et al. (2010); Du et al. (2016) added the authigenic and detrital arrays, and Blaser et al. (2020) the reference fields of foraminifera, ",
-             "pore water and seawater. ", shiny::strong("Whoever uses this tool or its figures should cite Blaser et al. (2020)"),
-             "; citing Martin et al. (2010) and Du et al. (2016) as well is optional but appreciated. Please also cite the sources of the reference data (see References) where they matter for your argument."),
     shiny::h4("What the plot shows"),
     shiny::p("Shale-normalised REE patterns are reduced to two numbers: the REE slope ",
              shiny::strong("HREE/LREE = (Tm+Yb+Lu)/(La+Pr+Nd)"), " and the mid-REE bulge ",
@@ -88,19 +84,14 @@ about_ui <- function() {
         "Anthropogenic Gd = Gd (1 − baseline/anomaly), in the units of the input. Natural samples are not exactly at 1 (typically 1.1–1.2 with Bau and Dulski), ",
         "so a baseline can be divided out. 'Ignore Gd' replaces the measured Gd by baseline × Gd* before the ratios are calculated."),
       shiny::tags$li(shiny::strong("REE roughness: "), "scatter of the Nd-Lu pattern around its smooth neighbours (unpublished screening measure; needs Pr, Nd, Sm, Gd-Lu measured). ",
-        "It is called roughness because it quantifies how jagged a pattern looks: natural shale-normalised patterns are smooth, so visible roughness is a sign of relatively poor data quality. ",
-        "Typical causes are a larger imprint of (instrumental) contamination, poor counting statistics at low concentrations and a larger contribution from interferences. ",
-        "Samples above the chosen value can be left out; the filter only applies to your data. The Data quality tab shows the distribution of the roughness of your groups against the reference data, ",
-        "so you can judge whether your values are unusual for the type of sample (seawater is naturally rougher than foraminifera because of its low concentrations)."),
+        "High values point to concentrations near the detection limit or oxide interferences. Samples above the chosen value can be left out; the filter only applies to your data."),
       shiny::tags$li(shiny::strong("Screening by gaps: "), "samples can be left out when fewer than a chosen number of the 14 REE were measured, or when chosen elements are missing ",
         "(measured values only; interpolated gaps do not count). In lambda space a pattern needs at least 10 usable elements (Ce and Eu are not used), otherwise it gets no lambda values."),
       shiny::tags$li(shiny::strong("Plot window: "), "by default the window holds the arrays, the field outlines and your data; with 200 or more samples the extreme 0.5% at either end are left off-scale ",
         "(the status line counts samples outside the window)."),
-      shiny::tags$li(shiny::strong("Lambda space (experimental): "), "the pattern is fitted by orthogonal polynomials of the ionic radius (O'Neill, 2016; fitting procedure and tetrad terms as in Anenburg and Williams, 2022; this is a base-R port of their BLambdaR calculation). ",
+      shiny::tags$li(shiny::strong("Lambda space (experimental): "), "the pattern is fitted by orthogonal polynomials of the ionic radius (O'Neill, 2016; Anenburg and Williams, 2022). ",
         "−λ1 (slope) and −λ2 (curvature) replace HREE/LREE and MREE/MREE*. Reference data and arrays were fitted with Ce and Eu excluded and all tetrad terms; ",
-        "the lambda roughness replaces the REE roughness in this mode. The original web app BLambdaR (",
-        shiny::tags$a(href = "https://lambdar.rses.anu.edu.au/blambdar/", target = "_blank", rel = "noopener", "lambdar.rses.anu.edu.au/blambdar"),
-        ") offers the complete fit, including the tetrad and anomaly analysis, and can be used to explore and calculate lambda values.")
+        "the lambda roughness replaces the REE roughness in this mode.")
     ),
     shiny::h4("Spectra"),
     shiny::p("The Spectra tab shows the REE patterns of your data, normalised to the chosen reference (optionally divided by one element, which removes absolute concentration differences), ",
