@@ -205,6 +205,16 @@ check("molar and mixed units are recognised",
 up <- prepare_user_data(pg, "concentrations", "mass", default_cfg(), id_col = "Sample label")
 check("PANGAEA data are plotted; empty Tm cells are missing values, not errors",
       sum(is.finite(up$data$x)) == 26 && sum(up$data$n_REE_measured < 14) == 7)
+exu <- ex; exu$basis <- NULL; exu$Unit <- "pmol/kg"
+uu <- prepare_user_data(exu, "concentrations", "mass", cfg_fig3)
+check("a 'unit' column with pmol/kg sets the molar basis per row and gives the same ratios as 'basis'",
+      all(uu$data$basis == "molar") && near(uu$data$x, u$data$x, 1e-12))
+exu$Unit[3] <- "??"
+check("unrecognised unit entries fall back to the selected basis, with a message",
+      prepare_user_data(exu, "concentrations", "molar", cfg_fig3)$data$basis[3] == "molar" &&
+      any(grepl("unrecognised", prepare_user_data(exu, "concentrations", "molar", cfg_fig3)$messages)))
+check("basis words and units are classified", identical(classify_basis(c("mass", "Molar", "ppm", "ng/g", "nmol/kg", "x")),
+      c("mass", "molar", "mass", "mass", "molar", NA)))
 check("ratio columns such as Ce/Ce* or La/Yb are not taken for the element",
       identical(unname(detect_ree_columns(c("Ce/Ce*", "La/Yb", "Eu / Eu*", "Ce [ppm]"))), "Ce [ppm]"))
 

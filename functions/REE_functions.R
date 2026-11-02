@@ -1,5 +1,5 @@
 # =============================================================================
-# REE_functions.R - stand-alone R functions behind the REE cross-plot app
+# REE_functions.R - stand-alone R functions behind the REE analysis tool
 #
 #   REE_ratios()    HREE/LREE, MREE/MREE*, Ce/Ce*, La/La*, Eu/Eu*, Gd/Gd*, anthropogenic Gd
 #                   and REE roughness
@@ -80,14 +80,20 @@
   if (length(hit)) hit[1] else NULL
 }
 
+#' Classify basis words or unit strings per value: "mass", "molar" or NA
+.ree_classify_basis <- function(u) {
+  u <- trimws(as.character(u))
+  ifelse(grepl("^(molar|mole?s?)$|mol", u, ignore.case = TRUE), "molar",
+  ifelse(grepl("^mass$|ppm|ppb|ppt|g/g|g/kg|g/t|g g|mg|\u00b5g|ug|ng|pg", u, ignore.case = TRUE), "mass", NA_character_))
+}
+
 #' Unit basis from the units in the REE column names ("La [mg/kg]", "Nd_pmol/kg" ...)
 .ree_units_basis <- function(cols) {
   u <- vapply(cols, function(nm) {
     b <- regmatches(nm, regexpr("\\[[^]]+\\]|\\([^)]+\\)", nm))
     if (length(b)) gsub("^[[(]|[])]$", "", b) else sub("^[A-Za-z]{2}[ _.]*", "", nm)
   }, character(1))
-  cls <- ifelse(grepl("mol", u, ignore.case = TRUE), "molar",
-         ifelse(grepl("ppm|ppb|ppt|g/g|g/kg|g/t|g g|mg|\u00b5g|ug|ng|pg", u, ignore.case = TRUE), "mass", NA_character_))
+  cls <- .ree_classify_basis(u)
   if (all(is.na(cls))) return(NA_character_)
   if (any(is.na(cls)) || length(unique(cls)) > 1) return("mixed")
   cls[1]
@@ -118,18 +124,27 @@
 }
 
 #' Concentration basis per row: a scalar, one value per row, or the name of a column of `data`;
-#' NULL uses a column named "basis" (any case) if there is one, otherwise the units in the REE
-#' column names ("La [mg/kg]" -> mass, "La [pmol/kg]" -> molar), otherwise "mass".
+#' NULL uses a column named "basis", "unit" or "units" (any case; mass/molar or units such as ppm,
+#' mg/kg, pmol/kg) if there is one, otherwise the units in the REE column names ("La [mg/kg]" ->
+#' mass, "La [pmol/kg]" -> molar), otherwise "mass".
 .ree_basis <- function(data, basis) {
   if (is.null(basis)) {
-    bc <- names(data)[tolower(names(data)) == "basis"]
-    if (length(bc)) basis <- data[[bc[1]]] else {
+    bc <- names(data)[tolower(trimws(names(data))) %in% c("basis", "unit", "units")]
+    if (length(bc)) {
+      v <- .ree_classify_basis(data[[bc[1]]])
+      if (any(is.na(v))) stop("Unrecognised entries in the '", bc[1], "' column (rows ",
+                              paste(utils::head(which(is.na(v)), 5), collapse = ", "),
+                              "): use mass/molar or units such as ppm, mg/kg, pmol/kg, or give `basis`.")
+      basis <- v
+    } else {
       ub <- .ree_units_basis(.ree_detect_columns(names(data)))
       if (identical(ub, "mixed")) warning("The REE columns have different units; `basis` = \"mass\" assumed. Check the units or give `basis`.")
       basis <- if (ub %in% c("mass", "molar")) ub else "mass"
     }
   } else if (length(basis) == 1 && basis %in% names(data)) basis <- data[[basis]]
   b <- rep_len(tolower(trimws(as.character(basis))), nrow(data))
+  cls <- .ree_classify_basis(b)                   # units such as "ppm" or "pmol/kg" are accepted too
+  b <- ifelse(is.na(cls), b, cls)
   if (any(!b %in% c("mass", "molar")))
     stop("`basis` must be 'mass' or 'molar' (got: ", paste(unique(b[!b %in% c("mass", "molar")]), collapse = ", "), ").")
   b
@@ -376,13 +391,13 @@ REE_read <- function(path) {
 
 #' REE ratios, anomalies, anthropogenic Gd and REE roughness
 #'
-#' Same calculation and options as the REE cross-plot app (sidebar sections "Your data",
+#' Same calculation and options as the REE analysis tool (sidebar sections "Your data",
 #' "Normalisation & ratios", "Screening" and "Anthropogenic Gd").
 #'
 #' @param data data.frame with REE concentrations. Columns are recognised when their name starts
 #'   with the element symbol ("La", "La_ppm", "Nd (pmol/kg)" ...); see `cols`.
 #' @param basis "mass" (e.g. ppm, ppb, ng/g) or "molar" (e.g. pmol/kg); a single value, one value
-#'   per row, or the name of a column. NULL (default) uses a column named "basis" if present,
+#'   per row, or the name of a column. NULL (default) uses a column named "basis" or "unit" if present,
 #'   otherwise the units in the REE column names (e.g. "La [mg/kg]", as in PANGAEA files),
 #'   otherwise "mass".
 #' @param norm normalising reference: "PAAS_Pourmand2012" (default), "PAAS_McLennan1989",

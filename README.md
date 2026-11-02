@@ -1,12 +1,12 @@
-# REE cross-plot: MREE/MREE\* vs HREE/LREE
+# REE analysis tool
 
-An interactive R Shiny tool that places your rare earth element (REE) data on the MREE/MREE\* vs HREE/LREE cross-plot (Martin et al., 2010; arrays added by Du et al., 2016; reference fields added by Blaser et al., 2020, Fig. 3), together with
+An interactive R Shiny tool for the analysis of rare earth element (REE) concentration patterns, aimed in particular at seawater and authigenic samples. It places your data on the MREE/MREE\* (mid-REE enrichment) vs HREE/LREE (heavy-REE enrichment) cross-plot (Martin et al., 2010; arrays added by Du et al., 2016; reference fields added by Blaser et al., 2020, Fig. 3), together with
 
 - the marine **authigenic array** (seawater to Fe-Mn nodule mixing),
 - the **detrital array** (MORB, Greenland Archaean crust and Canadian Precambrian shield mixing),
 - kernel-density **fields** of published foraminifera, pore water and seawater data (including GEOTRACES IDP2025 seawater, split at 200 m).
 
-The app runs entirely in the browser (Shinylive / WebAssembly), so uploaded data never leave your computer.
+It also plots the normalised REE spectra, screens the quality of the data (REE roughness), estimates anthropogenic gadolinium, and returns all calculated values. The app runs entirely in the browser (Shinylive / WebAssembly), so uploaded data never leave your computer.
 
 **Use it online:** [patrick-blaser.github.io/Other/REE-crossplot](https://patrick-blaser.github.io/Other/REE-crossplot)
 
@@ -18,7 +18,7 @@ The MREE/MREE\* vs HREE/LREE diagram was introduced by Martin et al. (2010); Du 
 
 The sidebar has six collapsible sections.
 
-1. **Your data**: upload a CSV/TSV or a PANGAEA `.tab` file (or tick *Use example data*; uploading a file unticks it), choose concentrations or ratios, the unit basis (mass or molar), ID and group columns, and further columns to carry into the results. The columns recognised as REE (and Y) are listed under the status message. For PANGAEA files the metadata header is skipped, the dataset citation and DOI are shown and written into the results table, and the unit basis is set from the units in the column names (e.g. `La [mg/kg]`); columns such as `Ce/Ce*` or `La/Yb` are not mistaken for the elements.
+1. **Your data**: upload a CSV/TSV or a PANGAEA `.tab` file (or tick *Use example data*; uploading a file unticks it), choose concentrations or ratios, the unit basis (mass or molar; a column named `basis` or `unit` with mass/molar or units such as ppm, mg/kg or pmol/kg sets it per row, otherwise units in the column names are used), ID and group columns, and further columns to carry into the results. The columns recognised as REE (and Y) are listed under the status message. For PANGAEA files the metadata header is skipped, the dataset citation and DOI are shown and written into the results table, and the unit basis is set from the units in the column names (e.g. `La [mg/kg]`); columns such as `Ce/Ce*` or `La/Yb` are not mistaken for the elements.
 2. **Normalisation & ratios**: normalising reference (PAAS Pourmand et al. 2012 by default; PAAS McLennan 1989, NASC, EUS Bau et al. 2018, CI chondrites after Pourmand 2012 or O'Neill 2016, or your own one-row reference file), LREE definition (La-Pr-Nd or Pr-Nd-Sm) gap method (interpolate, group mean, none) and the Ce/Ce\* definition.
 3. **Screening & symbols**: symbol fill by group, a numeric column (e.g. age, depth), REE roughness or Gd/Gd\*; an optional roughness limit; a minimum number of measured REE and required elements; group visibility (tick a single group to show only that one, or untick groups to exclude them). Screening applies to your data only.
 4. **Plot**: λ space (experimental), log10 axes (both axes together), legend on/off, plot window, field coverage and smoothness, point size and optional density fields for your own groups.
@@ -91,7 +91,7 @@ lam <- REE_lambda(mydata, basis = "molar")
 sp  <- REE_spectrum(mydata, basis = "molar", colour = "depth", keep = res$screen == "ok")
 ```
 
-Only base R is needed (ggplot2 for `REE_spectrum()`). See `functions/examples.R` for more examples, including the cross-plot and the roughness distribution. `functions/test_functions.R` checks that the functions reproduce the app's results for 400 random option combinations on three data sets, the λ parameters, the spectra and a PANGAEA file.
+Only base R is needed (ggplot2 for `REE_spectrum()`). See `functions/examples.R` for more examples, including the MREE/MREE\* vs HREE/LREE cross-plot and the roughness distribution. `functions/test_functions.R` checks that the functions reproduce the app's results for 400 random option combinations on three data sets, the λ parameters, the spectra and a PANGAEA file.
 
 ## Rebuilding the reference data
 

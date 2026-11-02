@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use this software or its figures, please cite the article given under preferred-citation."
-title: "REE cross-plot: interactive tool and R functions for harmonizing, screening and plotting rare earth element data"
+title: "REE analysis tool: interactive web app and R functions for harmonizing, screening and plotting rare earth element data"
 type: software
 authors:
   - family-names: Blaser
@@ -10,8 +10,8 @@ authors:
 repository-code: "https://github.com/patrick-blaser/ree-crossplot"
 url: "https://patrick-blaser.github.io/ree-crossplot/"
 license: MIT
-version: "1.0.1"
-date-released: "2026-10-30"
+version: "1.2.0"
+date-released: "2026-11-02"
 keywords:
   - rare earth elements
   - REE patterns

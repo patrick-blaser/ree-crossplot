@@ -1,4 +1,4 @@
-# MREE/MREE* vs HREE/LREE cross-plot with authigenic and detrital arrays
+# REE analysis tool: MREE/MREE* vs HREE/LREE cross-plot with authigenic and detrital arrays, spectra and data quality
 # Interactive R Shiny app (runs in the browser via shinylive/webR; see README)
 library(shiny)
 library(ggplot2)
@@ -24,7 +24,7 @@ section <- function(title, ..., open = FALSE) {
 }
 
 ui <- fluidPage(
-  title = "REE cross-plot: MREE/MREE* vs HREE/LREE",
+  title = "REE analysis tool",
   tags$head(tags$style(HTML("
     body { font-size: 14px; }
     .well { padding: 10px; }
@@ -48,7 +48,10 @@ ui <- fluidPage(
   # grey out (and annotate) the options that have no effect while lambda space is selected
   tags$script(HTML("$(document).on('shiny:inputchanged', function(e) {
     if (e.name === 'lambda_space') { $('body').toggleClass('lam', !!e.value); } });"))),
-  titlePanel("REE cross-plot: MREE/MREE* vs HREE/LREE"),
+  titlePanel(div("REE analysis tool",
+                 tags$small(style = "color:#555; font-size:55%; margin-left:8px;",
+                            "MREE/MREE* vs HREE/LREE cross-plot, REE spectra and data quality")),
+             windowTitle = "REE analysis tool"),
   div(class = "cite-note",
       HTML("<b>Please cite Blaser et al. (2020)</b> when you use this tool or figures made with it (full reference under \"About &amp; references\"). ",
            "The MREE/MREE* vs HREE/LREE diagram goes back to Martin et al. (2010), Du et al. (2016) added the authigenic and detrital arrays, ",
@@ -65,7 +68,7 @@ ui <- fluidPage(
         conditionalPanel("input.mode == 'concentrations'",
           radioButtons("basis", "Concentration units are per …", inline = TRUE,
                        choices = c("mass (ppm, ng/g, …)" = "mass", "mole (pmol/kg, …)" = "molar")),
-          div(class = "small-note", "A 'basis' column in the file overrides this per row.")),
+          div(class = "small-note", "A column named 'basis' or 'unit' in the file (mass/molar, or units such as ppm, mg/kg, pmol/kg) overrides this per row; otherwise units in the column names are used.")),
         conditionalPanel("input.mode == 'ratios'",
           selectInput("xcol", "HREE/LREE column", choices = NULL),
           selectInput("ycol", "MREE/MREE* column", choices = NULL)),
@@ -234,7 +237,7 @@ server <- function(input, output, session) {
     updateSelectInput(session, "id_col", choices = c("(none)", nms),
                       selected = if (length(id_guess)) id_guess[1] else "(none)")
     # unit basis from the column names (e.g. "La [mg/kg]"), unless a 'basis' column decides per row
-    if (!"basis" %in% tolower(nms)) {
+    if (is.null(find_basis_column(nms))) {
       ub <- guess_basis_from_units(detect_ree_columns(nms))
       if (ub$basis %in% c("mass", "molar")) updateRadioButtons(session, "basis", selected = ub$basis)
     }
@@ -401,7 +404,7 @@ server <- function(input, output, session) {
     if (is.null(df)) return(NULL)
     src <- attr(df, "source")
     nms <- names(df)
-    ub <- if (!"basis" %in% tolower(nms)) guess_basis_from_units(detect_ree_columns(nms)) else NULL
+    ub <- if (is.null(find_basis_column(nms))) guess_basis_from_units(detect_ree_columns(nms)) else NULL
     list(src = src, ub = ub)
   })
   output$source_note <- renderUI({

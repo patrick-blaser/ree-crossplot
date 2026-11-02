@@ -91,6 +91,20 @@ natural_sort <- function(x) {
   x[order(key, x)]
 }
 
+#' Classify unit strings or basis words per value: "mass", "molar" or NA
+#' ("mass"/"molar"/"mole", or units such as "ppm", "mg/kg", "ng/g", "pmol/kg", "nmol/kg")
+classify_basis <- function(u) {
+  u <- trimws(as.character(u))
+  ifelse(grepl("^(molar|mole?s?)$|mol", u, ignore.case = TRUE), "molar",
+  ifelse(grepl("^mass$|ppm|ppb|ppt|g/g|g/kg|g/t|g g|mg|\u00b5g|ug|ng|pg", u, ignore.case = TRUE), "mass", NA_character_))
+}
+
+#' Name of a column giving the basis or unit per row ("basis", "unit" or "units", any case), or NULL
+find_basis_column <- function(nms) {
+  hit <- nms[tolower(trimws(nms)) %in% c("basis", "unit", "units")]
+  if (length(hit)) hit[1] else NULL
+}
+
 #' Unit basis from the units in the REE column names ("La [mg/kg]", "Nd_pmol/kg", "Ce (ppb)" ...)
 #' @return list(basis = "mass"/"molar"/"mixed"/NA, units = distinct unit strings found)
 guess_basis_from_units <- function(cols) {
@@ -98,8 +112,7 @@ guess_basis_from_units <- function(cols) {
     b <- regmatches(nm, regexpr("\\[[^]]+\\]|\\([^)]+\\)", nm))
     if (length(b)) gsub("^[[(]|[])]$", "", b) else sub("^[A-Za-z]{2}[ _.]*", "", nm)
   }, character(1))
-  cls <- ifelse(grepl("mol", u, ignore.case = TRUE), "molar",
-         ifelse(grepl("ppm|ppb|ppt|g/g|g/kg|g/t|g g|mg|\u00b5g|ug|ng|pg", u, ignore.case = TRUE), "mass", NA_character_))
+  cls <- classify_basis(u)
   units <- unique(u[nzchar(u)])
   if (all(is.na(cls))) return(list(basis = NA_character_, units = units))
   if (any(is.na(cls)) || length(unique(cls)) > 1) return(list(basis = "mixed", units = units))
@@ -178,8 +191,14 @@ prepare_user_data <- function(df, mode = "concentrations", basis = "mass", cfg =
     nonpos <- sum(!is.na(cm) & cm <= 0, na.rm = TRUE)
     if (nonpos) msgs <- c(msgs, sprintf("%d zero/negative concentration value(s) were treated as missing.", nonpos))
     meas <- !is.na(cm) & cm > 0; dimnames(meas) <- list(NULL, c("Y", REE))
-    b <- if ("basis" %in% tolower(names(df))) df[[names(df)[tolower(names(df)) == "basis"][1]]] else basis
-    b <- tolower(trimws(as.character(b)))
+    bcol <- find_basis_column(names(df))
+    b <- rep_len(tolower(trimws(as.character(basis))), nrow(df))
+    if (!is.null(bcol)) {                      # per-row basis or unit column ("basis", "unit", "units")
+      bc <- classify_basis(df[[bcol]])
+      if (any(is.na(bc))) msgs <- c(msgs, sprintf(
+        "%d row(s) with an unrecognised entry in the '%s' column use the basis selected above.", sum(is.na(bc)), bcol))
+      b[!is.na(bc)] <- bc[!is.na(bc)]
+    }
     lg <- if (identical(cfg$gd_method, "BLambdaR")) lambda_gd_anomaly(conc, b) else NULL
     r <- ree_ratios(conc, b, cfg, lambda_gd_anom = lg)
     out <- data.frame(row = row_id, sample = sample, group = group, x = r$HREE_LREE, y = r$MREE_MREEstar,

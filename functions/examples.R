@@ -14,7 +14,7 @@ fig3 <- REE_ratios(dat, norm = "PAAS_McLennan1989", ce_form = "arithLaPr")
 # Gd contaminated samples: ignore measured Gd, estimate natural Gd geometrically from Sm and Tb
 res_gd <- REE_ratios(dat, gd = "ignore", gd_method = "BDgeo")
 
-# 2. Cross-plot
+# 2. MREE/MREE* vs HREE/LREE cross-plot
 ggplot(res[res$screen == "ok", ], aes(HREE_LREE, MREE_MREEstar, colour = group)) +
   geom_point(size = 2.5) + scale_x_log10() + scale_y_log10() +
   labs(x = "HREE/LREE", y = "MREE/MREE*") + theme_classic()
